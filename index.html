@@ -3,61 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Авиатор Любви</title>
+    <title>Авиатор Элита: 5 Самолетов</title>
     <style>
-        body { margin: 0; background: #1a2a6c; overflow: hidden; font-family: 'Segoe UI', sans-serif; touch-action: none; }
-        canvas { display: block; background: linear-gradient(#1a2a6c, #ff4b6e); }
+        body { margin: 0; background: #0b0e14; overflow: hidden; font-family: 'Segoe UI', sans-serif; touch-action: none; color: white; }
+        canvas { display: block; }
         
-        #ui { 
-            position: absolute; top: 15px; left: 15px; color: white; 
-            font-size: 18px; pointer-events: none; z-index: 10;
-            background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px;
-        }
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); z-index: 100; }
+        .hud { position: absolute; top: 10px; left: 10px; pointer-events: none; z-index: 10; font-size: 14px; background: rgba(0,0,0,0.4); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
         
-        /* Всплывающие фразы */
-        #speech-bubble {
-            position: absolute;
-            background: white;
-            color: #ff4b6e;
-            padding: 8px 15px;
-            border-radius: 15px;
-            font-weight: bold;
-            font-size: 14px;
-            display: none;
-            pointer-events: none;
-            z-index: 15;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            white-space: nowrap;
-        }
-
-        .menu {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: white; padding: 30px; border-radius: 25px;
-            text-align: center; z-index: 20; min-width: 280px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
+        .menu-card { background: #1a1c23; padding: 20px; border-radius: 24px; text-align: center; border: 2px solid #ff4b6e; width: 90%; max-width: 400px; box-shadow: 0 0 30px rgba(255, 75, 110, 0.3); }
         
-        button { 
-            padding: 15px 30px; font-size: 18px; border: none; 
-            background: #ff4b6e; color: white; border-radius: 50px; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(255, 75, 110, 0.4);
-        }
+        /* Сетка магазина 2 столбика для 5 моделей */
+        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 15px 0; max-height: 250px; overflow-y: auto; padding: 5px; }
+        .shop-item { background: #252833; padding: 10px; border-radius: 15px; font-size: 11px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .shop-item.active { border-color: #ff4b6e; background: #351a24; }
+        .shop-item.locked { opacity: 0.6; background: #15171e; }
+        
+        button { background: #ff4b6e; color: white; border: none; padding: 14px; border-radius: 50px; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; transition: 0.3s; }
+        button:active { transform: scale(0.95); }
+        
+        .price { color: #ffd700; font-weight: bold; display: block; margin-top: 4px; }
+        progress { width: 100%; height: 8px; accent-color: #ff4b6e; margin-top: 5px; }
+        .leaderboard { text-align: left; font-size: 12px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div id="ui">
-    🏆 Рекорд: <span id="best">0</span><br>
-    ⭐ Счет: <span id="score">0</span><br>
-    ⛽ Топливо: <progress id="fuel" value="100" max="100" style="width:100px;"></progress>
+<div class="hud">
+    💰 <span id="coinsHUD">0</span> | ⭐ <span id="scoreHUD">0</span><br>
+    ⛽ <progress id="fuelBar" value="100" max="100"></progress>
 </div>
 
-<div id="speech-bubble"></div>
+<div id="mainMenu" class="overlay">
+    <div class="menu-card">
+        <h2 style="margin:0 0 10px 0; color:#ff4b6e;">АНГАР САМОЛЕТОВ</h2>
+        <p style="margin: 5px 0;">Баланс: <b id="totalCoins" style="color:#ffd700;">0</b> 💰</p>
+        
+        <div class="shop-grid" id="shopGrid">
+            <!-- Самолеты генерируются через JS -->
+        </div>
 
-<div id="msg" class="menu">
-    <h1 style="color:#ff4b6e; margin-top:0;">Авиатор Любви</h1>
-    <p>Собирай топливо ⛽ и уворачивайся от врагов ⬛!<br><br><b>Управление:</b> Води пальцем или мышкой.</p>
-    <button onclick="startGame()">ВЗЛЕТАЕМ!</button>
+        <div class="leaderboard">
+            <b>🏆 Рекорды:</b>
+            <div id="bestScoresList">Пока нет рекордов</div>
+        </div>
+
+        <button onclick="startGame()" style="margin-top: 15px;">ВЗЛЕТ 🚀</button>
+    </div>
 </div>
 
 <canvas id="game"></canvas>
@@ -65,149 +57,197 @@
 <script>
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
-const bubble = document.getElementById('speech-bubble');
-
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-let score = 0;
-let fuel = 100;
-let bestScore = localStorage.getItem('bestScore') || 0;
-let gameActive = false;
-let lastMilestone = 0; // Для отслеживания каждых 100 очков
-
-// Список фраз
-const phrases = [
-    "Еле увернулась! 💨",
-    "Аккуратнее, врежешься! 😱",
-    "Ого, ты профи! ✨",
-    "Чертенок в небе! 🔥",
-    "Почти зацепило! ⚡",
-    "Летим навсегда! ❤️",
-    "Ты просто лучшая! 👑",
-    "Не сбавляй темп! 🚀"
+// --- 5 МОДЕЛЕЙ САМОЛЕТОВ ---
+const shipModels = [
+    { name: "Кукурузник", speed: 5, hp: 1, guns: 1, price: 0, color: '#ff4b6e', icon: '🛩️' },
+    { name: "Истребитель", speed: 8, hp: 1, guns: 1, price: 300, color: '#00d2ff', icon: '✈️' },
+    { name: "Бомбардировщик", speed: 4, hp: 3, guns: 1, price: 800, color: '#4caf50', icon: '🚀' },
+    { name: "Штурмовик", speed: 7, hp: 2, guns: 2, price: 1500, color: '#ffd700', icon: '🚁' },
+    { name: "Фантом-X", speed: 10, hp: 2, guns: 3, price: 3000, color: '#9c27b0', icon: '🛸' }
 ];
 
-const player = { x: canvas.width/2 - 25, y: canvas.height - 120, w: 50, h: 50 };
-const bullets = [];
-const enemies = [];
-const items = [];
+// --- ЗАГРУЗКА ДАННЫХ ---
+let userData = JSON.parse(localStorage.getItem('aviatorData_v2')) || {
+    coins: 0,
+    bestScores: [],
+    unlockedShips: [true, false, false, false, false],
+    currentShipIndex: 0
+};
 
-function handleMove(e) {
+// --- СОСТОЯНИЕ ---
+let score = 0, fuel = 100, gameActive = false, freezeTimer = 0;
+let player = { x: 0, y: 0, w: 45, h: 45, shield: 0 };
+const enemies = [], bullets = [], items = [];
+
+function initShop() {
+    const grid = document.getElementById('shopGrid');
+    grid.innerHTML = '';
+    shipModels.forEach((s, i) => {
+        const isUnlocked = userData.unlockedShips[i];
+        const isActive = userData.currentShipIndex === i;
+        const div = document.createElement('div');
+        div.className = `shop-item ${isUnlocked ? '' : 'locked'} ${isActive ? 'active' : ''}`;
+        div.onclick = () => buyOrSelectShip(i);
+        div.innerHTML = `
+            <span style="font-size:20px">${s.icon}</span><br>
+            <b>${s.name}</b><br>
+            <span style="font-size:9px">Скор:${s.speed} ХП:${s.hp}</span>
+            <span class="price">${isUnlocked ? 'ВЫБРАТЬ' : s.price + ' 💰'}</span>
+        `;
+        grid.appendChild(div);
+    });
+}
+
+function updateUI() {
+    document.getElementById('totalCoins').innerText = userData.coins;
+    document.getElementById('coinsHUD').innerText = userData.coins;
+    const list = document.getElementById('bestScoresList');
+    list.innerHTML = userData.bestScores.length ? userData.bestScores.map((s,i) => `${i+1}. ${s}`).join('<br>') : 'Нет данных';
+    initShop();
+}
+
+function buyOrSelectShip(index) {
+    if (userData.unlockedShips[index]) {
+        userData.currentShipIndex = index;
+    } else if (userData.coins >= shipModels[index].price) {
+        userData.coins -= shipModels[index].price;
+        userData.unlockedShips[index] = true;
+        userData.currentShipIndex = index;
+    }
+    save(); updateUI();
+}
+
+function save() { localStorage.setItem('aviatorData_v2', JSON.stringify(userData)); }
+
+// --- ГЕЙМПЛЕЙ ---
+function shoot() {
     if(!gameActive) return;
-    let clientX = e.clientX || (e.touches && e.touches[0].clientX);
-    let clientY = e.clientY || (e.touches && e.touches[0].clientY);
-    if(clientX) {
-        player.x = clientX - player.w/2;
-        player.y = clientY - player.h/2;
-        
-        // Двигаем бабл вместе с игроком
-        bubble.style.left = (player.x + 25) + 'px';
-        bubble.style.top = (player.y - 45) + 'px';
+    const ship = shipModels[userData.currentShipIndex];
+    const centerX = player.x + player.w/2;
+    
+    if (ship.guns === 1) bullets.push({x: centerX-2, y: player.y, w:4, h:12});
+    if (ship.guns === 2) {
+        bullets.push({x: player.x+5, y: player.y+10, w:4, h:12});
+        bullets.push({x: player.x+player.w-9, y: player.y+10, w:4, h:12});
+    }
+    if (ship.guns === 3) {
+        bullets.push({x: centerX-2, y: player.y, w:4, h:12});
+        bullets.push({x: player.x, y: player.y+15, w:4, h:12, angle: -0.2});
+        bullets.push({x: player.x+player.w-4, y: player.y+15, w:4, h:12, angle: 0.2});
     }
 }
 
-window.addEventListener('mousemove', handleMove);
-window.addEventListener('touchmove', handleMove);
-window.addEventListener('mousedown', shoot);
-window.addEventListener('keydown', (e) => { if(e.code === 'Space') shoot(); });
-
-function shoot() {
-    if(gameActive) bullets.push({ x: player.x + player.w/2 - 2, y: player.y, w: 4, h: 12 });
-}
-
-function showPhrase() {
-    const text = phrases[Math.floor(Math.random() * phrases.length)];
-    bubble.innerText = text;
-    bubble.style.display = 'block';
-    setTimeout(() => { bubble.style.display = 'none'; }, 2000);
-}
-
-function startGame() {
-    score = 0; fuel = 100; gameActive = true; lastMilestone = 0;
-    enemies.length = 0; items.length = 0; bullets.length = 0;
-    document.getElementById('msg').style.display = 'none';
-    document.getElementById('best').innerText = bestScore;
-    loop();
+function drawPlane(x, y, color, type = 'player') {
+    ctx.fillStyle = color;
+    ctx.shadowBlur = 10; ctx.shadowColor = color;
+    // Нос
+    ctx.beginPath(); ctx.moveTo(x+22, y); ctx.lineTo(x+35, y+45); ctx.lineTo(x+10, y+45); ctx.fill();
+    // Крылья
+    ctx.fillRect(x, y+20, 45, 8);
+    // Хвост
+    ctx.fillRect(x+12, y+40, 21, 5);
+    ctx.shadowBlur = 0;
 }
 
 function loop() {
     if(!gameActive) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#0b0e14"; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Проверка каждых 100 очков
-    if (score > 0 && score >= lastMilestone + 100) {
-        lastMilestone = score;
-        showPhrase();
+    if (freezeTimer > 0) freezeTimer--;
+
+    // Рисуем игрока и щит
+    drawPlane(player.x, player.y, shipModels[userData.currentShipIndex].color);
+    if(player.shield > 0) {
+        ctx.strokeStyle = "#00d2ff"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(player.x+22, player.y+22, 35, 0, Math.PI*2); ctx.stroke();
     }
 
-    // Игрок (Самолетик)
-    ctx.fillStyle = '#ff4b6e';
-    ctx.fillRect(player.x, player.y, player.w, player.h);
-    // Детали самолета
-    ctx.fillStyle = 'white';
-    ctx.fillRect(player.x + 5, player.y + 20, 40, 10);
-
-    // Пули
-    bullets.forEach((b, i) => {
-        b.y -= 12;
-        ctx.fillStyle = 'yellow';
-        ctx.fillRect(b.x, b.y, b.w, b.h);
-        if(b.y < 0) bullets.splice(i, 1);
-    });
-
     // Враги
-    if(Math.random() < 0.03) enemies.push({x: Math.random()*(canvas.width-40), y: -50, w: 40, h: 40});
+    if(Math.random() < 0.035 && freezeTimer === 0) enemies.push({x: Math.random()*(canvas.width-40), y: -50, w: 40, h: 40});
     enemies.forEach((en, i) => {
-        en.y += (4 + score/500); 
-        ctx.fillStyle = 'black';
-        ctx.fillRect(en.x, en.y, en.w, en.h);
-        if(intersect(player, en)) endGame();
+        if (freezeTimer === 0) en.y += (4 + score/1000);
+        drawPlane(en.x, en.y, "#333");
+        if(intersect(player, en)) {
+            if(player.shield > 0) { player.shield--; enemies.splice(i, 1); }
+            else endGame();
+        }
         bullets.forEach((b, bi) => {
             if(intersect(b, en)) {
-                enemies.splice(i, 1);
-                bullets.splice(bi, 1);
-                score += 10;
+                userData.coins += 5; enemies.splice(i, 1); bullets.splice(bi, 1); score += 10;
             }
         });
         if(en.y > canvas.height) enemies.splice(i, 1);
     });
 
-    // Канистры
-    if(Math.random() < 0.015) items.push({x: Math.random()*(canvas.width-30), y: -50, w: 30, h: 30});
-    items.forEach((it, i) => {
-        it.y += 3;
-        ctx.fillStyle = 'orange';
-        ctx.fillRect(it.x, it.y, it.w, it.h);
-        if(intersect(player, it)) {
-            fuel = Math.min(100, fuel + 25);
-            items.splice(i, 1);
-        }
-        if(it.y > canvas.height) items.splice(i, 1);
+    // Пули
+    bullets.forEach((b, i) => {
+        b.y -= 12;
+        if(b.angle) b.x += b.angle * 10;
+        ctx.fillStyle = "yellow"; ctx.fillRect(b.x, b.y, b.w, b.h);
+        if(b.y < 0) bullets.splice(i, 1);
     });
 
-    fuel -= 0.08;
-    document.getElementById('score').innerText = score;
-    document.getElementById('fuel').value = fuel;
+    // Бонусы
+    if(Math.random() < 0.012) {
+        const t = ['f', 'c', 's', 'z'][Math.floor(Math.random()*4)];
+        items.push({x: Math.random()*(canvas.width-30), y: -50, w: 30, h: 30, t});
+    }
+    items.forEach((it, i) => {
+        it.y += 3;
+        ctx.fillStyle = it.t==='f'?'#ffa500':it.t==='c'?'#ffd700':it.t==='s'?'#00d2ff':'#fff';
+        ctx.font = "20px serif"; ctx.fillText(it.t==='f'?'⛽':it.t==='c'?'💰':it.t==='s'?'🛡️':'❄️', it.x, it.y);
+        if(intersect(player, it)) {
+            if(it.t==='f') fuel = Math.min(100, fuel + 30);
+            if(it.t==='c') userData.coins += 50;
+            if(it.t==='s') player.shield++;
+            if(it.t==='z') freezeTimer = 180;
+            items.splice(i, 1);
+        }
+    });
 
+    fuel -= 0.09;
+    document.getElementById('scoreHUD').innerText = score;
+    document.getElementById('coinsHUD').innerText = userData.coins;
+    document.getElementById('fuelBar').value = fuel;
     if(fuel <= 0) endGame();
     requestAnimationFrame(loop);
 }
 
-function intersect(r1, r2) {
-    return !(r2.x > r1.x + r1.w || r2.x + r2.w < r1.x || r2.y > r1.y + r1.h || r2.y + r2.h < r1.y);
+// Управление
+const handleInput = (e) => {
+    if(!gameActive) return;
+    const x = e.clientX || (e.touches && e.touches[0].clientX);
+    const y = e.clientY || (e.touches && e.touches[0].clientY);
+    player.x = x - player.w/2; player.y = y - player.h/2;
+};
+window.addEventListener('mousemove', handleInput);
+window.addEventListener('touchmove', (e) => { e.preventDefault(); handleInput(e); }, {passive: false});
+window.addEventListener('mousedown', shoot);
+
+function intersect(r1, r2) { return !(r2.x > r1.x + r1.w || r2.x + r2.w < r1.x || r2.y > r1.y + r1.h || r2.y + r2.h < r1.y); }
+
+function startGame() {
+    gameActive = true; score = 0; fuel = 100; freezeTimer = 0;
+    enemies.length = 0; bullets.length = 0; items.length = 0;
+    const ship = shipModels[userData.currentShipIndex];
+    player.shield = ship.hp - 1;
+    document.getElementById('mainMenu').style.display = 'none';
+    loop();
 }
 
 function endGame() {
     gameActive = false;
-    if(score > bestScore) {
-        bestScore = score;
-        localStorage.setItem('bestScore', bestScore);
-    }
-    const m = document.getElementById('msg');
-    m.style.display = 'block';
-    m.innerHTML = `<h1 style="color:#ff4b6e">БА-БАХ!</h1><p>Твой результат: ${score}<br>Лучший полет: ${bestScore}</p><button onclick="startGame()">ВЗЛЕТЕТЬ СНОВА</button>`;
+    userData.bestScores.push(score);
+    userData.bestScores.sort((a,b) => b-a);
+    userData.bestScores = userData.bestScores.slice(0, 3);
+    save(); updateUI();
+    document.getElementById('mainMenu').style.display = 'flex';
 }
+
+updateUI();
 </script>
 </body>
 </html>
