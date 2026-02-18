@@ -4,38 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Aviator Elite 806L4</title>
+    <link rel="icon" type="image/png" href="icon-512.png">
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
         :root { --pink: #ff4b6e; --dark: #0f172a; --gold: #ffd700; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-touch-callout: none; user-select: none; }
-        
+
         body { background: var(--dark); color: white; font-family: sans-serif; overflow: hidden; touch-action: none; width: 100vw; height: 100vh; }
-        
+
         /* ГЛАВНОЕ: Холст под меню */
         canvas { position: absolute; top: 0; left: 0; z-index: 1; display: block; }
 
         /* ИНТЕРФЕЙС ПОВЕРХ ВСЕГО */
-        .overlay { 
-            position: absolute; inset: 0; 
-            display: flex; align-items: center; justify-content: center; 
-            background: rgba(15, 23, 42, 0.9); 
+        .overlay {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(15, 23, 42, 0.9);
             z-index: 100; /* Самый высокий слой */
             backdrop-filter: blur(10px);
         }
 
-        .menu-card { 
-            background: #1e293b; padding: 25px; border-radius: 25px; 
-            text-align: center; border: 2px solid var(--pink); 
-            width: 90%; max-width: 400px; 
-            pointer-events: all; 
+        .menu-card {
+            background: #1e293b; padding: 25px; border-radius: 25px;
+            text-align: center; border: 2px solid var(--pink);
+            width: 90%; max-width: 400px;
+            pointer-events: all;
         }
 
         .hud { position: absolute; top: 50px; left: 20px; z-index: 10; pointer-events: none; font-family: monospace; }
-        
+
         .tabs { display: flex; gap: 5px; margin: 15px 0; }
-        .tab-btn { 
-            flex: 1; padding: 12px; border-radius: 10px; border: none; 
-            background: rgba(255,255,255,0.1); color: white; 
+        .tab-btn {
+            flex: 1; padding: 12px; border-radius: 10px; border: none;
+            background: rgba(255,255,255,0.1); color: white;
             font-weight: bold; cursor: pointer; font-size: 12px;
         }
         .tab-btn.active { background: var(--pink); }
@@ -80,7 +81,7 @@
 
 <script>
 // --- КЛЮЧИ  ---
-const SB_URL = 'https://mnfddistqwbtmcyroojg.supabase.co'; 
+const SB_URL = 'https://mnfddistqwbtmcyroojg.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1uZmRkaXN0cXdidG1jeXJvb2pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0MDYzMjYsImV4cCI6MjA4Njk4MjMyNn0.8TMxgNPykwOCIVGfLLKv2aFnVukt4UueHuLDOs3qt3w';
 const sb = (SB_URL) ? supabase.createClient(SB_URL, SB_KEY) : null;
 
@@ -141,7 +142,7 @@ const game = {
     loop: () => {
         if(!game.active) return;
         ctx.fillStyle = '#0f172a'; ctx.fillRect(0,0,canvas.width, canvas.height);
-        
+
         // Плавное движение
         game.p.x += (game.p.tx - game.p.x) * 0.15;
         game.p.y += (game.p.ty - game.p.y) * 0.15;
@@ -165,9 +166,9 @@ const move = (e) => {
 window.addEventListener('mousemove', move);
 window.addEventListener('touchmove', (e) => { move(e); }, {passive:false});
 
-window.addEventListener('resize', () => { 
-    canvas.width = window.innerWidth; 
-    canvas.height = window.innerHeight; 
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 });
 
 // ЗАПУСК
@@ -178,4 +179,3 @@ window.onload = () => {
 </script>
 </body>
 </html>
-
