@@ -3,31 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <!-- Интеграция с Telegram -->
     <script src="https://telegram.org"></script>
-    
-    <!-- PWA Настройки -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="icon-512.png">
     <link rel="manifest" href="manifest.json">
-    
-    <title>Авиатор Элита</title>
+    <title>Aviator 806L4</title>
     <style>
-        :root { --pink: #ff4b6e; --gold: #ffd700; --blue: #00d2ff; }
+        :root { --pink: #ff4b6e; --gold: #ffd700; }
         body { margin: 0; background: #0b0e14; overflow: hidden; font-family: 'Segoe UI', sans-serif; touch-action: none; color: white; }
         canvas { display: block; }
-        
-        /* Универсальный баннер установки */
-        #pwa-banner { 
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); 
-            width: 90%; max-width: 400px; background: white; color: #333; 
-            padding: 20px; border-radius: 20px; z-index: 1000; 
-            display: none; text-align: center; border: 3px solid var(--pink);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
         .hud { position: absolute; top: 10px; left: 10px; z-index: 10; font-size: 14px; background: rgba(0,0,0,0.6); padding: 12px; border-radius: 12px; pointer-events: none; }
         .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); z-index: 100; }
         .menu-card { background: #1a1c23; padding: 25px; border-radius: 24px; text-align: center; border: 2px solid var(--pink); width: 85%; max-width: 380px; }
@@ -36,31 +21,27 @@
         .shop-item.active { border-color: var(--pink); background: #351a24; }
         button { background: var(--pink); color: white; border: none; padding: 14px; border-radius: 50px; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; margin-top: 10px; }
         .author { margin-top: 15px; font-size: 8px; color: rgba(255,255,255,0.3); letter-spacing: 1px; }
+        #pwa-banner { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: white; color: #333; padding: 20px; border-radius: 20px; z-index: 1000; display: none; text-align: center; border: 3px solid var(--pink); }
     </style>
 </head>
 <body>
 
 <div id="pwa-banner">
-    <h3 id="pwa-title">Установи игру! 📱</h3>
-    <p id="pwa-text">Нажми "Поделиться" -> "На экран Домой" (для iPhone) или нажми кнопку ниже.</p>
-    <button id="pwa-button">УСТАНОВИТЬ</button>
-    <button onclick="this.parentElement.style.display='none'" style="background:#555; margin-top:5px; font-size:12px;">ПОЗЖЕ</button>
+    <h3 style="color:var(--pink);margin:0">Установи игру! 📱</h3>
+    <p style="font-size:12px">Нажми "Поделиться" -> "На экран Домой" или кнопку Установить в браузере.</p>
+    <button id="pwa-btn">УСТАНОВИТЬ</button>
+    <button onclick="this.parentElement.style.display='none'" style="background:#555;font-size:10px">ПОЗЖЕ</button>
 </div>
 
-<div class="hud">
-    💰 <span id="coinsHUD">0</span> | ⭐ <span id="scoreHUD">0</span><br>
-    ⛽ <progress id="fuelBar" value="100" max="100" style="width:80px;"></progress>
-</div>
+<div class="hud">💰 <span id="coinsHUD">0</span> | ⭐ <span id="scoreHUD">0</span><br>⛽ <progress id="fuelBar" value="100" max="100" style="width:80px;"></progress></div>
 
 <div id="mainMenu" class="overlay">
     <div class="menu-card">
         <h2 style="margin:0; color:var(--pink);">АНГАР САМОЛЕТОВ</h2>
         <p>Баланс: <b id="totalCoins" style="color:var(--gold);">0</b> 💰</p>
         <div class="shop-grid" id="shopGrid"></div>
-        <div style="font-size: 11px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 10px;">
-            🏆 ТОП: <span id="bestScoresList">0</span>
-        </div>
-        <button onclick="startGame()">ВЗЛЕТ 🚀</button>
+        <div style="font-size: 11px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 10px;">🏆 ТОП: <span id="bestScoresList">0</span></div>
+        <button id="startBtn">ВЗЛЕТ 🚀</button>
         <div class="author">MADE BY <b>806L4</b> WITH STRONG SUPPORT FROM AI</div>
     </div>
 </div>
@@ -68,43 +49,6 @@
 <canvas id="game"></canvas>
 
 <script>
-// --- ИНИЦИАЛИЗАЦИЯ TELEGRAM ---
-const tg = window.Telegram?.WebApp;
-if (tg) {
-    tg.expand(); // Развернуть на весь экран в ТГ
-    tg.headerColor = '#0b0e14';
-    tg.backgroundColor = '#0b0e14';
-}
-
-// --- ДЕТЕКТОР УСТАНОВКИ (Яндекс, Chrome, Safari) ---
-let deferredPrompt;
-const pwaBanner = document.getElementById('pwa-banner');
-const pwaBtn = document.getElementById('pwa-button');
-
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    pwaBanner.style.display = 'block';
-    document.getElementById('pwa-title').innerText = "Играй в Яндексе!";
-    document.getElementById('pwa-text').innerText = "Нажми кнопку, чтобы добавить игру на рабочий стол.";
-});
-
-pwaBtn.addEventListener('click', async () => {
-    if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') pwaBanner.style.display = 'none';
-        deferredPrompt = null;
-    }
-});
-
-// Проверка для iPhone (Safari)
-if (/iPhone|iPad/.test(navigator.userAgent) && !window.navigator.standalone) {
-    pwaBanner.style.display = 'block';
-    pwaBtn.style.display = 'none'; // У iPhone нет кнопки "Установить", только через меню "Поделиться"
-}
-
-// --- ЛОГИКА ИГРЫ ---
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
@@ -124,7 +68,7 @@ let userData = JSON.parse(localStorage.getItem('aviator_806L4_final')) || {
 
 let score = 0, fuel = 100, gameActive = false, freezeTimer = 0;
 let player = { x: canvas.width/2-20, y: canvas.height-100, w: 40, h: 40, shield: 0 };
-const enemies = [], bullets = [], items = [];
+let enemies = [], bullets = [], items = [];
 
 function updateUI() {
     document.getElementById('totalCoins').innerText = userData.coins;
@@ -133,35 +77,24 @@ function updateUI() {
     const grid = document.getElementById('shopGrid');
     grid.innerHTML = '';
     shipModels.forEach((s, i) => {
-        const isUnlocked = userData.unlockedShips[i];
         const div = document.createElement('div');
-        div.className = `shop-item ${isUnlocked ? '' : 'locked'} ${userData.currentShipIndex === i ? 'active' : ''}`;
-        div.innerHTML = `<span style="font-size:20px">${s.icon}</span><br><b>${s.name}</b><br><span style="color:var(--gold)">${isUnlocked ? 'ВЫБРАТЬ' : s.price+'💰'}</span>`;
+        div.className = `shop-item ${userData.unlockedShips[i] ? '' : 'locked'} ${userData.currentShipIndex === i ? 'active' : ''}`;
+        div.innerHTML = `<span style="font-size:20px">${s.icon}</span><br><b>${s.name}</b><br><span style="color:var(--gold)">${userData.unlockedShips[i] ? 'ВЫБРАТЬ' : s.price+'💰'}</span>`;
         div.onclick = () => {
-            if (isUnlocked) userData.currentShipIndex = i;
-            else if (userData.coins >= s.price) { userData.coins -= s.price; userData.unlockedShips[i] = true; userData.currentShipIndex = i; tg?.HapticFeedback.notificationOccurred('success'); }
-            save(); updateUI();
+            if (userData.unlockedShips[i]) { userData.currentShipIndex = i; }
+            else if (userData.coins >= s.price) { userData.coins -= s.price; userData.unlockedShips[i] = true; userData.currentShipIndex = i; }
+            localStorage.setItem('aviator_806L4_final', JSON.stringify(userData)); updateUI();
         };
         grid.appendChild(div);
     });
 }
 
-function save() { localStorage.setItem('aviator_806L4_final', JSON.stringify(userData)); }
-
 function drawPlane(x, y, color) {
     ctx.fillStyle = color;
-    ctx.fillRect(x + 15, y, 10, 40); 
-    ctx.fillRect(x, y + 15, 40, 8);  
-    ctx.fillRect(x + 10, y + 35, 20, 5);
+    ctx.fillRect(x + 15, y, 10, 40); ctx.fillRect(x, y + 15, 40, 8); ctx.fillRect(x + 10, y + 35, 20, 5);
 }
 
-function shoot() {
-    if(!gameActive) return;
-    const ship = shipModels[userData.currentShipIndex];
-    if(ship.guns === 1) bullets.push({x: player.x+18, y: player.y, w:4, h:10});
-    if(ship.guns === 2) { bullets.push({x: player.x+5, y: player.y+10, w:4, h:10}); bullets.push({x: player.x+31, y: player.y+10, w:4, h:10}); }
-    if(ship.guns === 3) { bullets.push({x: player.x+18, y: player.y, w:4, h:10}); bullets.push({x: player.x, y: player.y+15, w:4, h:10, vx:-2}); bullets.push({x: player.x+36, y: player.y+15, w:4, h:10, vx:2}); }
-}
+function intersect(r1, r2) { return !(r2.x > r1.x + r1.w || r2.x + r2.w < r1.x || r2.y > r1.y + r1.h || r2.y + r2.h < r1.y); }
 
 function loop() {
     if(!gameActive) return;
@@ -169,19 +102,14 @@ function loop() {
     if(freezeTimer > 0) freezeTimer--;
 
     drawPlane(player.x, player.y, shipModels[userData.currentShipIndex].color);
-    if(player.shield > 0) { ctx.strokeStyle = var(--blue); ctx.lineWidth=2; ctx.beginPath(); ctx.arc(player.x+20, player.y+20, 30, 0, Math.PI*2); ctx.stroke(); }
+    if(player.shield > 0) { ctx.strokeStyle = "#00d2ff"; ctx.strokeRect(player.x-5, player.y-5, 50, 50); }
 
     if(Math.random() < 0.03 && freezeTimer === 0) enemies.push({x: Math.random()*(canvas.width-40), y: -50, w: 40, h: 40});
     enemies.forEach((en, i) => {
         if(freezeTimer === 0) en.y += (4 + score/1000);
         drawPlane(en.x, en.y, "#333");
-        if(intersect(player, en)) { 
-            if(player.shield > 0) { player.shield--; enemies.splice(i,1); tg?.HapticFeedback.impactOccurred('medium'); } 
-            else endGame(); 
-        }
-        bullets.forEach((b, bi) => { 
-            if(intersect(b, en)) { userData.coins += 5; enemies.splice(i,1); bullets.splice(bi,1); score += 10; tg?.HapticFeedback.impactOccurred('light'); } 
-        });
+        if(intersect(player, en)) { if(player.shield > 0) { player.shield--; enemies.splice(i,1); } else { gameActive = false; document.getElementById('mainMenu').style.display = 'flex'; userData.bestScores.push(score); userData.bestScores.sort((a,b)=>b-a); localStorage.setItem('aviator_806L4_final', JSON.stringify(userData)); updateUI(); } }
+        bullets.forEach((b, bi) => { if(intersect(b, en)) { userData.coins += 5; enemies.splice(i,1); bullets.splice(bi,1); score += 10; } });
         if(en.y > canvas.height) enemies.splice(i, 1);
     });
 
@@ -197,33 +125,33 @@ function loop() {
             if(it.t==='s') player.shield++;
             if(it.t==='z') freezeTimer = 180;
             items.splice(i, 1);
-            tg?.HapticFeedback.notificationOccurred('success');
         }
     });
 
     fuel -= 0.08;
     document.getElementById('scoreHUD').innerText = score;
-    document.getElementById('coinsHUD').innerText = userData.coins;
     document.getElementById('fuelBar').value = fuel;
-    if(fuel <= 0) endGame();
+    if(fuel <= 0) { gameActive = false; document.getElementById('mainMenu').style.display = 'flex'; updateUI(); }
     requestAnimationFrame(loop);
 }
 
-function move(e) { 
-    if(!gameActive) return; 
-    let x = e.clientX || (e.touches && e.touches[0].clientX); 
-    let y = e.clientY || (e.touches && e.touches[0].clientY); 
-    player.x = x - 20; player.y = y - 20; 
-}
-window.addEventListener('mousemove', move);
-window.addEventListener('touchmove', (e) => { e.preventDefault(); move(e); }, {passive: false});
-window.addEventListener('mousedown', shoot);
+document.getElementById('startBtn').onclick = () => {
+    gameActive = true; score = 0; fuel = 100; freezeTimer = 0;
+    enemies = []; bullets = []; items = [];
+    player.shield = shipModels[userData.currentShipIndex].hp - 1;
+    document.getElementById('mainMenu').style.display = 'none';
+    loop();
+};
 
-function intersect(r1, r2) { return !(r2.x > r1.x + r1.w || r2.x + r2.w < r1.x || r2.y > r1.y + r1.h || r2.y + r2.h < r1.y); }
-function startGame() { gameActive = true; score = 0; fuel = 100; freezeTimer = 0; enemies.length = 0; bullets.length = 0; items.length = 0; player.shield = shipModels[userData.currentShipIndex].hp - 1; document.getElementById('mainMenu').style.display = 'none'; loop(); }
-function endGame() { gameActive = false; userData.bestScores.push(score); userData.bestScores.sort((a,b)=>b-a); save(); updateUI(); document.getElementById('mainMenu').style.display = 'flex'; tg?.HapticFeedback.notificationOccurred('error'); }
+window.addEventListener('mousemove', (e) => { if(gameActive) { player.x = e.clientX-20; player.y = e.clientY-20; } });
+window.addEventListener('touchmove', (e) => { if(gameActive) { e.preventDefault(); player.x = e.touches[0].clientX-20; player.y = e.touches[0].clientY-20; } }, {passive:false});
+window.addEventListener('mousedown', () => {
+    if(!gameActive) return;
+    const ship = shipModels[userData.currentShipIndex];
+    if(ship.guns >= 1) bullets.push({x: player.x+18, y: player.y, w:4, h:10});
+    if(ship.guns >= 2) { bullets.push({x: player.x+5, y: player.y+10, w:4, h:10}); bullets.push({x: player.x+31, y: player.y+10, w:4, h:10}); }
+});
 
-if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }
 updateUI();
 </script>
 </body>
