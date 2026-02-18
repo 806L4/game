@@ -3,217 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <script src="https://telegram.org"></script>
-    <title>Aviator Elite 806L4 - MEGA EDITION</title>
+    <title>Aviator Elite 806L4</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.jsdelivr.net"></script>
     <style>
-        :root { --pink: #ff4b6e; --gold: #ffd700; --blue: #00d2ff; --admin: #00ff41; }
-        * { box-sizing: border-box; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
-        body { margin: 0; background: #0b0e14; overflow: hidden; font-family: 'Segoe UI', sans-serif; touch-action: none; width: 100vw; height: 100vh; color: white; }
+        :root { --pink: #ff4b6e; --gold: #ffd700; --blue: #00d2ff; --sky: #e0f7fa; --dark: #1a2a6c; }
+        * { box-sizing: border-box; -webkit-touch-callout: none; user-select: none; }
+        body { margin: 0; background: var(--sky); overflow: hidden; font-family: 'Segoe UI', sans-serif; touch-action: none; color: var(--dark); }
         canvas { display: block; width: 100%; height: 100%; }
 
-        /* Лента событий */
-        #event-bar { position: absolute; top: 0; left: 0; width: 100%; background: rgba(0,0,0,0.85); color: var(--blue); font-size: 11px; padding: 6px 0; z-index: 200; overflow: hidden; border-bottom: 1px solid var(--pink); }
-        #event-text { display: inline-block; white-space: nowrap; animation: scroll 30s linear infinite; }
-        @keyframes scroll { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
+        /* Интерфейс */
+        #event-bar { position: absolute; top: 0; width: 100%; background: rgba(255,255,255,0.9); color: var(--pink); font-size: 11px; padding: 6px 0; z-index: 200; overflow: hidden; border-bottom: 1px solid var(--pink); font-weight: bold; }
+        #event-text { display: inline-block; white-space: nowrap; animation: scroll 20s linear infinite; padding-left: 100%; }
+        @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-100%); } }
 
-        /* HUD */
-        .hud { position: absolute; top: 40px; left: 15px; z-index: 10; background: rgba(255,255,255,0.15); padding: 10px; border-radius: 15px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); pointer-events: none; }
-        progress { width: 80px; height: 10px; accent-color: var(--pink); }
-
-        /* Меню */
-        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(10, 20, 50, 0.9); z-index: 100; }
-        .menu-card { background: #1a1c23; padding: 25px; border-radius: 30px; text-align: center; border: 2px solid var(--pink); width: 88%; max-width: 380px; box-shadow: 0 0 30px var(--pink); }
+        .hud { position: absolute; top: 45px; left: 15px; z-index: 10; background: rgba(255,255,255,0.7); padding: 10px 15px; border-radius: 20px; backdrop-filter: blur(10px); border: 1px solid white; pointer-events: none; font-weight: bold; }
         
-        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 15px 0; max-height: 180px; overflow-y: auto; }
-        .shop-item { background: #252833; padding: 10px; border-radius: 15px; font-size: 11px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
-        .shop-item.active { border-color: var(--pink); background: #351a24; }
-        .rgb-anim { animation: rgb-glow 2s linear infinite; }
-        @keyframes rgb-glow { 0% {border-color:red;} 33% {border-color:lime;} 66% {border-color:blue;} 100% {border-color:red;} }
-
-        .leaderboard { background: rgba(0,0,0,0.3); border-radius: 15px; padding: 10px; margin: 10px 0; text-align: left; font-size: 12px; }
-        input { background: #0b0e14; color: white; width: 100%; padding: 12px; margin: 10px 0; border-radius: 12px; border: 1px solid var(--pink); text-align: center; font-size: 16px; }
-        button { background: var(--pink); color: white; border: none; padding: 15px; border-radius: 50px; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; margin-top: 10px; }
+        .overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(26, 42, 108, 0.7); z-index: 100; backdrop-filter: blur(15px); }
+        .menu-card { background: white; padding: 25px; border-radius: 30px; text-align: center; border: 4px solid var(--pink); width: 92%; max-width: 400px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
         
-        .settings-btn { background: #444; font-size: 12px; }
-        .settings-panel { display: none; flex-direction: column; gap: 10px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 15px; margin-top: 10px; }
+        .tabs-nav { display: flex; justify-content: space-around; margin: 15px 0; background: #f0f4f8; border-radius: 15px; padding: 5px; }
+        .tab-link { cursor: pointer; padding: 8px 12px; border-radius: 10px; font-size: 12px; font-weight: bold; color: #888; transition: 0.3s; }
+        .tab-link.active { background: var(--pink); color: white; }
+
+        .tab-content { display: none; max-height: 300px; overflow-y: auto; margin-top: 10px; }
+        .tab-content.active { display: block; }
+
+        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 5px; }
+        .shop-item { background: #f8f9fa; padding: 12px; border-radius: 15px; border: 2px solid #eee; transition: 0.2s; position: relative; }
+        .shop-item.selected { border-color: var(--pink); background: #fff0f3; }
+        .shop-item img { width: 50px; height: auto; display: block; margin: 0 auto 5px; }
+
+        input { background: #f0f4f8; border: 2px solid #ddd; padding: 12px; width: 100%; border-radius: 15px; text-align: center; margin-bottom: 10px; font-weight: bold; }
+        button { background: var(--pink); color: white; border: none; padding: 15px; border-radius: 50px; font-weight: bold; width: 100%; font-size: 16px; box-shadow: 0 5px 15px rgba(255,75,110,0.3); cursor: pointer; }
+        
+        .leader-row { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee; font-size: 14px; }
     </style>
 </head>
 <body>
 
-<div id="event-bar"><div id="event-text">Пилот 806L4 входит в систему... ORIGIN готов к вылету... Сеть пилотов активна...</div></div>
+<div id="event-bar"><div id="event-text">Загрузка систем... Пилот готов к вылету... Проверка связи с сервером...</div></div>
+<div class="hud">💰 <span id="hCoins">0</span> | ⭐ <span id="hScore">0</span></div>
 
-<div class="hud">💰 <span id="cHUD">0</span> | ⭐ <span id="sHUD">0</span><br>⛽ <progress id="fBar" value="100" max="100"></progress></div>
-
-<div id="menu" class="overlay">
+<div id="mainMenu" class="overlay">
     <div class="menu-card">
-        <h2 id="title" style="margin:0; color:var(--pink);">АНГАР 806L4</h2>
-        <input type="text" id="pName" placeholder="Твой ник" maxlength="12">
-        <p style="font-size:14px">Баланс: <b id="totalC" style="color:var(--gold)">0</b> 💰</p>
+        <div id="rankBadge" style="background:var(--pink); color:white; padding:5px 15px; border-radius:12px; font-size:11px; display:inline-block; margin-bottom:10px;">ЗВАНИЕ: КУРСАНТ</div>
+        <h2 id="shipNameDisplay" style="margin:5px 0;">АНГАР 806L4</h2>
+        <p id="shipDesc" style="font-size:12px; color:#666; margin-bottom:10px;">Выберите свой первый самолет</p>
         
-        <div class="shop-grid" id="shop"></div>
-        <div class="leaderboard">🏆 ТОП: <span id="tops">Нет данных</span></div>
-
-        <button id="startBtn">ВЗЛЕТ 🚀</button>
-        <button class="settings-btn" onclick="tglSet()">НАСТРОЙКИ & САППОРТ ⚙️</button>
-        
-        <div id="setBox" class="settings-panel">
-            <a href="https://t.me" target="_blank" style="color:var(--blue); text-decoration:none;">💬 Поддержка: @camelot0</a>
-            <p style="font-size:10px; opacity:0.5">Звук и вибрация включены по умолчанию</p>
+        <div class="tabs-nav">
+            <div class="tab-link active" onclick="ui.tab('shop')">САМОЛЕТЫ</div>
+            <div class="tab-link" onclick="ui.tab('leader')">ТОП МИРА</div>
+            <div class="tab-link" onclick="ui.tab('settings')">ИНФО</div>
         </div>
-        
-        <div style="font-size:8px; margin-top:15px; opacity:0.4;">CREATED BY 806L4 | v3.0 MEGA</div>
+
+        <div id="tab-shop" class="tab-content active"><div class="shop-grid" id="sGrid"></div></div>
+        <div id="tab-leader" class="tab-content"><div id="lList">Загрузка рейтинга...</div></div>
+        <div id="tab-settings" class="tab-content">
+            <input type="text" id="pName" placeholder="Ваш позывной" maxlength="12">
+            <p>Звук: <b onclick="ui.toggle('sfx')" id="cfg-sfx" style="color:var(--pink);cursor:pointer">ВКЛ</b></p>
+            <p>Поддержка: <a href="https://t.me" style="color:var(--pink)">@camelot0</a></p>
+        </div>
+
+        <button onclick="game.start()" style="margin-top:15px;">ВЗЛЕТ 🚀</button>
     </div>
 </div>
 
 <canvas id="game"></canvas>
 
 <script>
-(function() {
-    const tg = window.Telegram?.WebApp;
-    const canvas = document.getElementById('game');
-    const ctx = canvas.getContext('2d');
-    
-    // --- ЗВУКОВОЙ ДВИЖОК ---
-    const Sfx = {
-        ctx: null,
-        init() { if(!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
-        play(f, t, d, v, s=0) {
-            if(!this.ctx || this.ctx.state === 'suspended') return;
-            const o = this.ctx.createOscillator(); const g = this.ctx.createGain();
-            o.type = t; o.frequency.setValueAtTime(f, this.ctx.currentTime);
-            if(s) o.frequency.exponentialRampToValueAtTime(s, this.ctx.currentTime+d);
-            g.gain.setValueAtTime(v, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime+d);
-            o.connect(g); g.connect(this.ctx.destination); o.start(); o.stop(this.ctx.currentTime+d);
-        },
-        shoot() { this.play(400, 'square', 0.1, 0.05, 100); },
-        boom() { this.play(100, 'sawtooth', 0.3, 0.1, 20); },
-        coin() { this.play(800, 'sine', 0.1, 0.1, 1200); },
-        win() { this.play(500, 'sine', 0.4, 0.1, 1000); }
-    };
+// --- КОНФИГУРАЦИЯ БАЗЫ ---
+const SUPABASE_URL = 'ТВОЙ_URL'; 
+const SUPABASE_KEY = 'ТВОЙ_KEY';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let userData = JSON.parse(localStorage.getItem('av_mega_806')) || {
-        n: "", c: 0, u: [true, false, false, false, false, false], cur: 0, s: []
-    };
+// --- ДАННЫЕ САМОЛЕТОВ ---
+const ships = [
+    { n: "Як-52", d: "Учебный винт. Маневренный.", p: 0, g: 1, c: "#ff4b6e" },
+    { n: "L-39", d: "Реактивный тренажер.", p: 500, g: 1, c: "#00d2ff" },
+    { n: "МиГ-15", d: "Легенда корейской войны.", p: 1500, g: 1, c: "#4caf50" },
+    { n: "F-86 Sabre", d: "Скоростной перехватчик.", p: 3000, g: 2, c: "#ffd700" },
+    { n: "МиГ-21", d: "Сверхзвуковой классик.", p: 7000, g: 2, c: "#9c27b0" },
+    { n: "F-4 Phantom", d: "Тяжелый истребитель.", p: 12000, g: 2, c: "#795548" },
+    { n: "МиГ-25", d: "Король высоты и скорости.", p: 20000, g: 3, c: "#607d8b" },
+    { n: "F-14 Tomcat", d: "Крылья с изменяемой геометрией.", p: 30000, g: 3, c: "#3f51b5" },
+    { n: "Су-27", d: "Лучшая маневренность в мире.", p: 45000, g: 3, c: "#03a9f4" },
+    { n: "F-15 Eagle", d: "Рекордсмен воздушных боев.", p: 60000, g: 4, c: "#8bc34a" },
+    { n: "МиГ-31", d: "Дальний страж неба.", p: 75000, g: 4, c: "#ff9800" },
+    { n: "F-22 Raptor", d: "Технология Стелс 5-го поколения.", p: 95000, g: 4, c: "#212121" },
+    { n: "Су-57", d: "Перспективный авиационный комплекс.", p: 120000, g: 5, c: "#455a64" },
+    { n: "SR-71", d: "Разведчик на краю космоса.", p: 160000, g: 5, c: "#1a1a1a" },
+    { n: "Starship", d: "Межпланетный корабль SpaceX.", p: 250000, g: 6, c: "gold" }
+];
 
-    const ships = [
-        { name: "Спутник", guns: 1, price: 0, color: '#ff4b6e' },
-        { name: "Ракета", guns: 1, price: 300, color: '#00d2ff' },
-        { name: "Танк", guns: 1, price: 800, color: '#4caf50' },
-        { name: "Дрон", guns: 2, price: 1500, color: '#ffd700' },
-        { name: "Фантом-X", guns: 3, price: 3000, color: '#9c27b0' },
-        { name: "ORIGIN", guns: 4, price: 0, color: 'rgb', adm: true }
-    ];
+const ranks = [
+    { m: 0, t: "КУРСАНТ" }, { m: 1000, t: "ПИЛОТ" }, { m: 5000, t: "АС" },
+    { m: 15000, t: "МАЙОР" }, { m: 50000, t: "ГЕНЕРАЛ" }, { m: 100000, t: "МАРШАЛ" }
+];
 
-    let score = 0, fuel = 100, active = false, hue = 0, lastM = 0;
-    let player = { x: 0, y: 0, w: 50, h: 50, isAdm: false };
-    let enemies = [], bullets = [], items = [];
+// --- ЯДРО СИСТЕМЫ ---
+let db = JSON.parse(localStorage.getItem('avi_806')) || { n: "Пилот", c: 0, u: [true], cur: 0, hi: 0, cfg: {sfx:true} };
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
 
-    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    window.addEventListener('resize', resize); resize();
-
-    function drawPlane(x, y, color, isEn = false) {
-        ctx.save(); ctx.translate(x + 25, y + 25); if(isEn) ctx.rotate(Math.PI);
-        if(color === 'rgb') { hue = (hue + 2)%360; ctx.fillStyle = `hsl(${hue}, 100%, 50%)`; } else ctx.fillStyle = color;
-        // Корпус
-        ctx.beginPath(); ctx.moveTo(0, -25); ctx.lineTo(15, 20); ctx.lineTo(-15, 20); ctx.closePath(); ctx.fill();
-        // Крылья
-        ctx.fillRect(-25, 0, 50, 8);
-        // Кабина
-        ctx.fillStyle = isEn ? "red" : "cyan"; ctx.beginPath(); ctx.arc(0, -5, 5, 0, Math.PI*2); ctx.fill();
-        ctx.restore();
-    }
-
-    function updateUI() {
-        const nick = document.getElementById('pName').value.toLowerCase().trim();
-        player.isAdm = (nick === '806l4');
-        document.getElementById('title').innerHTML = player.isAdm ? '<span style="color:var(--admin)">[ADMIN]</span> 806L4' : 'АНГАР 806L4';
-        document.getElementById('totalC').innerText = userData.c;
-        document.getElementById('cHUD').innerText = userData.c;
-        document.getElementById('tops').innerText = userData.s.slice(0,3).map(x => x.v).join(', ') || '0';
-        
-        const grid = document.getElementById('shop'); grid.innerHTML = '';
+const ui = {
+    tab: (n) => {
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+        document.getElementById('tab-'+n).classList.add('active');
+        event.target.classList.add('active');
+        if(n === 'leader') ui.loadLeaderboard();
+    },
+    renderShop: () => {
+        const grid = document.getElementById('sGrid');
+        grid.innerHTML = '';
         ships.forEach((s, i) => {
-            if(s.adm && !player.isAdm) return;
             const div = document.createElement('div');
-            div.className = `shop-item ${userData.cur === i ? 'active' : ''} ${s.color==='rgb'?'rgb-anim':''}`;
+            div.className = `shop-item ${db.cur === i ? 'selected' : ''}`;
+            div.innerHTML = `<b>${s.n}</b><br><small>${db.u[i] ? 'ВЗЛЕТ' : s.p+' 💰'}</small>`;
             div.onclick = () => {
-                if(userData.u[i] || (s.adm && player.isAdm)) { userData.cur = i; }
-                else if(userData.c >= s.price) { userData.c -= s.price; userData.u[i] = true; userData.cur = i; }
-                save(); updateUI();
+                if(db.u[i]) { db.cur = i; }
+                else if(db.c >= s.p) { db.c -= s.p; db.u[i] = true; db.cur = i; }
+                document.getElementById('shipNameDisplay').innerText = s.n;
+                document.getElementById('shipDesc').innerText = s.d;
+                ui.save(); ui.renderShop();
             };
-            div.innerHTML = `<b>${s.name}</b><br>${userData.u[i] || (s.adm && player.isAdm) ? 'ВЫБРАТЬ' : s.price+'💰'}`;
             grid.appendChild(div);
         });
+        document.getElementById('hCoins').innerText = db.c;
+        const rank = ranks.slice().reverse().find(r => db.hi >= r.m).t;
+        document.getElementById('rankBadge').innerText = "ЗВАНИЕ: " + rank;
+    },
+    save: () => localStorage.setItem('avi_806', JSON.stringify(db)),
+    loadLeaderboard: async () => {
+        const { data } = await sb.from('leaderboard').select('*').order('score', { ascending: false }).limit(10);
+        if(data) {
+            document.getElementById('lList').innerHTML = data.map((p, i) => 
+                `<div class="leader-row"><span>${i+1}. ${p.name}</span><b>${p.score}</b></div>`).join('');
+        }
     }
+};
 
-    function loop() {
-        if(!active) return;
-        ctx.fillStyle = "#0b0e14"; ctx.fillRect(0,0, canvas.width, canvas.height);
+// --- ИГРОВОЙ ДВИЖОК ---
+const game = {
+    active: false,
+    score: 0,
+    player: { x: 0, y: 0, tx: 0, ty: 0 },
+    bullets: [], enemies: [],
+    start: () => {
+        db.n = document.getElementById('pName').value || "Пилот";
+        ui.save();
+        document.getElementById('mainMenu').style.display = 'none';
+        game.active = true; game.score = 0; game.enemies = []; game.bullets = [];
+        game.player.x = canvas.width/2; game.player.y = canvas.height - 100;
+        game.loop();
+        game.spawn();
+    },
+    spawn: () => {
+        if(!game.active) return;
+        game.enemies.push({ x: Math.random()*canvas.width, y: -50, s: 3 + Math.random()*3 });
+        setTimeout(game.spawn, 1000 - Math.min(game.score/5, 700));
+    },
+    loop: () => {
+        if(!game.active) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Отрисовка игрока
-        drawPlane(player.x, player.y, ships[userData.cur].color);
+        // Движение игрока
+        game.player.x += (game.player.tx - game.player.x) * 0.1;
+        game.player.y += (game.player.ty - game.player.y) * 0.1;
 
         // Стрельба
-        if(Date.now() % 150 < 20) { bullets.push({x: player.x+23, y: player.y, w:4, h:12}); Sfx.shoot(); }
+        if(Date.now() % 150 < 20) game.bullets.push({x: game.player.x, y: game.player.y - 20});
 
-        // Враги
-        if(Math.random() < 0.03) enemies.push({x: Math.random()*(canvas.width-40), y: -60});
-        enemies.forEach((en, i) => {
-            en.y += (4 + score/1000);
-            drawPlane(en.x, en.y, "#444", true);
-            if(intersect(player, {x:en.x, y:en.y, w:40, h:40})) { Sfx.boom(); if(tg) tg.HapticFeedback.notificationOccurred('error'); endGame(); }
-            bullets.forEach((b, bi) => {
-                if(intersect(b, {x:en.x, y:en.y, w:40, h:40})) {
-                    enemies.splice(i,1); bullets.splice(bi,1); score += 10; userData.c += 2; Sfx.boom();
-                    if(score >= lastM + 1000) { lastM += 1000; Sfx.win(); if(tg) tg.HapticFeedback.notificationOccurred('success'); }
+        // Отрисовка игрока
+        ctx.fillStyle = ships[db.cur].c;
+        ctx.beginPath(); ctx.arc(game.player.x, game.player.y, 20, 0, Math.PI*2); ctx.fill();
+
+        // Пули и Враги
+        game.bullets.forEach((b, i) => {
+            b.y -= 12;
+            ctx.fillStyle = 'orange'; ctx.fillRect(b.x-2, b.y, 4, 10);
+            if(b.y < 0) game.bullets.splice(i, 1);
+        });
+
+        game.enemies.forEach((en, i) => {
+            en.y += en.s;
+            ctx.fillStyle = var(--dark); ctx.fillRect(en.x-15, en.y-15, 30, 30);
+            
+            // Коллизии
+            game.bullets.forEach((b, bi) => {
+                if(Math.hypot(en.x - b.x, en.y - b.y) < 25) {
+                    game.enemies.splice(i, 1); game.bullets.splice(bi, 1);
+                    game.score += 10; db.c += 1;
+                    document.getElementById('hScore').innerText = game.score;
+                    document.getElementById('hCoins').innerText = db.c;
                 }
             });
-            if(en.y > canvas.height) enemies.splice(i, 1);
+
+            if(Math.hypot(en.x - game.player.x, en.y - game.player.y) < 35) game.over();
+            if(en.y > canvas.height) game.enemies.splice(i, 1);
         });
 
-        bullets.forEach((b, i) => { b.y -= 10; ctx.fillStyle = "yellow"; ctx.fillRect(b.x, b.y, b.w, b.h); if(b.y < -20) bullets.splice(i,1); });
-
-        // Предметы
-        if(Math.random() < 0.012) items.push({x: Math.random()*canvas.width, y: -50, t: Math.random()>0.5?'⛽':'💰'});
-        items.forEach((it, i) => {
-            it.y += 3; ctx.font = "24px serif"; ctx.fillText(it.t, it.x, it.y);
-            if(intersect(player, {x:it.x, y:it.y, w:25, h:25})) {
-                if(it.t === '⛽') fuel = Math.min(100, fuel + 30); else userData.c += 50;
-                Sfx.coin(); items.splice(i, 1);
-            }
-        });
-
-        fuel -= 0.08;
-        document.getElementById('sHUD').innerText = score;
-        document.getElementById('fBar').value = fuel;
-        if(fuel <= 0) endGame();
-        requestAnimationFrame(loop);
+        requestAnimationFrame(game.loop);
+    },
+    over: async () => {
+        game.active = false;
+        if(game.score > db.hi) {
+            db.hi = game.score;
+            await sb.from('leaderboard').insert([{ name: db.n, score: db.hi }]);
+        }
+        ui.save();
+        alert("САМОЛЕТ СБИТ! Счет: " + game.score);
+        location.reload();
     }
+};
 
-    function intersect(r1, r2) { return !(r2.x > r1.x + 45 || r2.x + 40 < r1.x || r2.y > r1.y + 45 || r2.y + 40 < r1.y); }
-    function move(e) { if(!active) return; let x = e.clientX || e.touches?.[0].clientX; let y = e.clientY || e.touches?.[0].clientY; player.x = x - 25; player.y = y - 25; }
-    
-    window.addEventListener('pointermove', move);
-    window.addEventListener('touchstart', (e) => { if(active) e.preventDefault(); }, {passive:false});
+// Управление
+window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+window.dispatchEvent(new Event('resize'));
+canvas.addEventListener('touchmove', (e) => { e.preventDefault(); game.player.tx = e.touches[0].clientX; game.player.ty = e.touches[0].clientY; }, {passive:false});
+canvas.addEventListener('mousemove', (e) => { game.player.tx = e.clientX; game.player.ty = e.clientY; });
 
-    document.getElementById('startBtn').onclick = () => {
-        Sfx.init(); if(Sfx.ctx.state === 'suspended') Sfx.ctx.resume();
-        const n = document.getElementById('pName').value.trim();
-        if(!n) return alert("Введи ник!");
-        userData.n = n; active = true; score = 0; fuel = 100; lastM = 0;
-        enemies = []; bullets = []; items = [];
-        document.getElementById('menu').style.display = 'none';
-        loop();
-    };
-
-    function endGame() { active = false; userData.s.push({v:score}); userData.s.sort((a,b)=>b.v-a.v); save(); updateUI(); document.getElementById('menu').style.display = 'flex'; }
-    function save() { localStorage.setItem('av_mega_806', JSON.stringify(userData)); }
-    window.tglSet = () => { const b = document.getElementById('setBox'); b.style.display = b.style.display === 'flex' ? 'none' : 'flex'; };
-
-    if(userData.n) document.getElementById('pName').value = userData.n;
-    document.getElementById('pName').oninput = updateUI;
-    updateUI();
-})();
+ui.renderShop();
 </script>
 </body>
 </html>
