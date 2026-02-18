@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Авиатор Любви</title>
+    <style>
+        body { margin: 0; background: #1a2a6c; overflow: hidden; font-family: 'Segoe UI', sans-serif; touch-action: none; }
+        canvas { display: block; background: linear-gradient(#1a2a6c, #ff4b6e); }
+        
+        #ui { 
+            position: absolute; top: 15px; left: 15px; color: white; 
+            font-size: 18px; pointer-events: none; z-index: 10;
+            background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px;
+        }
+        
+        /* Всплывающие фразы */
+        #speech-bubble {
+            position: absolute;
+            background: white;
+            color: #ff4b6e;
+            padding: 8px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 14px;
+            display: none;
+            pointer-events: none;
+            z-index: 15;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            white-space: nowrap;
+        }
+
+        .menu {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: white; padding: 30px; border-radius: 25px;
+            text-align: center; z-index: 20; min-width: 280px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        button { 
+            padding: 15px 30px; font-size: 18px; border: none; 
+            background: #ff4b6e; color: white; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(255, 75, 110, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+<div id="ui">
+    🏆 Рекорд: <span id="best">0</span><br>
+    ⭐ Счет: <span id="score">0</span><br>
+    ⛽ Топливо: <progress id="fuel" value="100" max="100" style="width:100px;"></progress>
+</div>
+
+<div id="speech-bubble"></div>
+
+<div id="msg" class="menu">
+    <h1 style="color:#ff4b6e; margin-top:0;">Авиатор Любви</h1>
+    <p>Собирай топливо ⛽ и уворачивайся от врагов ⬛!<br><br><b>Управление:</b> Води пальцем или мышкой.</p>
+    <button onclick="startGame()">ВЗЛЕТАЕМ!</button>
+</div>
+
+<canvas id="game"></canvas>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const bubble = document.getElementById('speech-bubble');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let score = 0;
+let fuel = 100;
+let bestScore = localStorage.getItem('bestScore') || 0;
+let gameActive = false;
+let lastMilestone = 0; // Для отслеживания каждых 100 очков
+
+// Список фраз
+const phrases = [
+    "Еле увернулась! 💨",
+    "Аккуратнее, врежешься! 😱",
+    "Ого, ты профи! ✨",
+    "Чертенок в небе! 🔥",
+    "Почти зацепило! ⚡",
+    "Летим навсегда! ❤️",
+    "Ты просто лучшая! 👑",
+    "Не сбавляй темп! 🚀"
+];
+
+const player = { x: canvas.width/2 - 25, y: canvas.height - 120, w: 50, h: 50 };
+const bullets = [];
+const enemies = [];
+const items = [];
+
+function handleMove(e) {
+    if(!gameActive) return;
+    let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+    let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+    if(clientX) {
+        player.x = clientX - player.w/2;
+        player.y = clientY - player.h/2;
+        
+        // Двигаем бабл вместе с игроком
+        bubble.style.left = (player.x + 25) + 'px';
+        bubble.style.top = (player.y - 45) + 'px';
+    }
+}
+
+window.addEventListener('mousemove', handleMove);
+window.addEventListener('touchmove', handleMove);
+window.addEventListener('mousedown', shoot);
+window.addEventListener('keydown', (e) => { if(e.code === 'Space') shoot(); });
+
+function shoot() {
+    if(gameActive) bullets.push({ x: player.x + player.w/2 - 2, y: player.y, w: 4, h: 12 });
+}
+
+function showPhrase() {
+    const text = phrases[Math.floor(Math.random() * phrases.length)];
+    bubble.innerText = text;
+    bubble.style.display = 'block';
+    setTimeout(() => { bubble.style.display = 'none'; }, 2000);
+}
+
+function startGame() {
+    score = 0; fuel = 100; gameActive = true; lastMilestone = 0;
+    enemies.length = 0; items.length = 0; bullets.length = 0;
+    document.getElementById('msg').style.display = 'none';
+    document.getElementById('best').innerText = bestScore;
+    loop();
+}
+
+function loop() {
+    if(!gameActive) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Проверка каждых 100 очков
+    if (score > 0 && score >= lastMilestone + 100) {
+        lastMilestone = score;
+        showPhrase();
+    }
+
+    // Игрок (Самолетик)
+    ctx.fillStyle = '#ff4b6e';
+    ctx.fillRect(player.x, player.y, player.w, player.h);
+    // Детали самолета
+    ctx.fillStyle = 'white';
+    ctx.fillRect(player.x + 5, player.y + 20, 40, 10);
+
+    // Пули
+    bullets.forEach((b, i) => {
+        b.y -= 12;
+        ctx.fillStyle = 'yellow';
+        ctx.fillRect(b.x, b.y, b.w, b.h);
+        if(b.y < 0) bullets.splice(i, 1);
+    });
+
+    // Враги
+    if(Math.random() < 0.03) enemies.push({x: Math.random()*(canvas.width-40), y: -50, w: 40, h: 40});
+    enemies.forEach((en, i) => {
+        en.y += (4 + score/500); 
+        ctx.fillStyle = 'black';
+        ctx.fillRect(en.x, en.y, en.w, en.h);
+        if(intersect(player, en)) endGame();
+        bullets.forEach((b, bi) => {
+            if(intersect(b, en)) {
+                enemies.splice(i, 1);
+                bullets.splice(bi, 1);
+                score += 10;
+            }
+        });
+        if(en.y > canvas.height) enemies.splice(i, 1);
+    });
+
+    // Канистры
+    if(Math.random() < 0.015) items.push({x: Math.random()*(canvas.width-30), y: -50, w: 30, h: 30});
+    items.forEach((it, i) => {
+        it.y += 3;
+        ctx.fillStyle = 'orange';
+        ctx.fillRect(it.x, it.y, it.w, it.h);
+        if(intersect(player, it)) {
+            fuel = Math.min(100, fuel + 25);
+            items.splice(i, 1);
+        }
+        if(it.y > canvas.height) items.splice(i, 1);
+    });
+
+    fuel -= 0.08;
+    document.getElementById('score').innerText = score;
+    document.getElementById('fuel').value = fuel;
+
+    if(fuel <= 0) endGame();
+    requestAnimationFrame(loop);
+}
+
+function intersect(r1, r2) {
+    return !(r2.x > r1.x + r1.w || r2.x + r2.w < r1.x || r2.y > r1.y + r1.h || r2.y + r2.h < r1.y);
+}
+
+function endGame() {
+    gameActive = false;
+    if(score > bestScore) {
+        bestScore = score;
+        localStorage.setItem('bestScore', bestScore);
+    }
+    const m = document.getElementById('msg');
+    m.style.display = 'block';
+    m.innerHTML = `<h1 style="color:#ff4b6e">БА-БАХ!</h1><p>Твой результат: ${score}<br>Лучший полет: ${bestScore}</p><button onclick="startGame()">ВЗЛЕТЕТЬ СНОВА</button>`;
+}
+</script>
+</body>
+</html>
