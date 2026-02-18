@@ -2,35 +2,53 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Aviator Elite 806L4</title>
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
-        :root { --pink: #ff4b6e; --dark: #0f172a; --gold: #ffd700; --blue: #00d2ff; }
-        * { box-sizing: border-box; -webkit-touch-callout: none; user-select: none; margin: 0; padding: 0; }
+        :root { --pink: #ff4b6e; --dark: #0f172a; --gold: #ffd700; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-touch-callout: none; user-select: none; }
+        
         body { background: var(--dark); color: white; font-family: sans-serif; overflow: hidden; touch-action: none; width: 100vw; height: 100vh; }
-        canvas { display: block; position: absolute; inset: 0; z-index: 1; }
+        
+        /* ГЛАВНОЕ: Холст под меню */
+        canvas { position: absolute; top: 0; left: 0; z-index: 1; display: block; }
 
-        /* Интерфейс */
-        .hud { position: absolute; top: 50px; left: 20px; z-index: 10; background: rgba(255,255,255,0.1); padding: 12px; border-radius: 15px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); pointer-events: none; }
-        .overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 100; backdrop-filter: blur(10px); }
-        .menu-card { background: #1e293b; padding: 25px; border-radius: 25px; text-align: center; border: 2px solid var(--pink); width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        /* ИНТЕРФЕЙС ПОВЕРХ ВСЕГО */
+        .overlay { 
+            position: absolute; inset: 0; 
+            display: flex; align-items: center; justify-content: center; 
+            background: rgba(15, 23, 42, 0.9); 
+            z-index: 100; /* Самый высокий слой */
+            backdrop-filter: blur(10px);
+        }
+
+        .menu-card { 
+            background: #1e293b; padding: 25px; border-radius: 25px; 
+            text-align: center; border: 2px solid var(--pink); 
+            width: 90%; max-width: 400px; 
+            pointer-events: all; /* Разрешаем клики */
+        }
+
+        .hud { position: absolute; top: 50px; left: 20px; z-index: 10; pointer-events: none; font-family: monospace; }
         
         .tabs { display: flex; gap: 5px; margin: 15px 0; }
-        .tab-btn { flex: 1; padding: 10px; border-radius: 10px; font-size: 11px; font-weight: bold; cursor: pointer; border: none; background: rgba(255,255,255,0.1); color: white; transition: 0.2s; }
+        .tab-btn { 
+            flex: 1; padding: 12px; border-radius: 10px; border: none; 
+            background: rgba(255,255,255,0.1); color: white; 
+            font-weight: bold; cursor: pointer; font-size: 12px;
+        }
         .tab-btn.active { background: var(--pink); }
 
-        .content { display: none; max-height: 250px; overflow-y: auto; margin: 10px 0; padding-right: 5px; }
+        .content { display: none; max-height: 200px; overflow-y: auto; margin: 10px 0; }
         .content.active { display: block; }
 
-        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .shop-item { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; border: 2px solid transparent; cursor: pointer; font-size: 12px; }
+        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .shop-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 2px solid transparent; cursor: pointer; }
         .shop-item.selected { border-color: var(--pink); background: rgba(255,75,110,0.1); }
 
-        input { background: #0f172a; border: 1px solid #334155; padding: 12px; width: 100%; border-radius: 10px; color: white; text-align: center; margin-bottom: 10px; }
-        .btn-main { background: var(--pink); color: white; border: none; padding: 15px; border-radius: 50px; font-weight: bold; width: 100%; font-size: 16px; cursor: pointer; margin-top: 10px; }
-        
-        .leader-row { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #334155; font-size: 13px; }
+        input { background: #0f172a; border: 1px solid #334155; padding: 15px; width: 100%; border-radius: 12px; color: white; text-align: center; margin-bottom: 10px; font-size: 16px; }
+        .btn-start { background: var(--pink); color: white; border: none; padding: 20px; border-radius: 50px; font-weight: bold; width: 100%; font-size: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -39,10 +57,8 @@
 
 <div id="mainMenu" class="overlay">
     <div class="menu-card">
-        <div id="rankLabel" style="color:var(--pink); font-size: 10px; font-weight: bold; margin-bottom: 5px;">ЗВАНИЕ: КУРСАНТ</div>
-        <h2 id="shipTitle">АНГАР</h2>
-        
-        <div id="shipStats" style="font-size: 11px; color: #94a3b8; margin: 10px 0;">Выберите самолет</div>
+        <h2 id="shipTitle">AVIATOR ELITE</h2>
+        <p id="rankLabel" style="font-size:12px; color:var(--pink); margin-bottom:10px;">ЗВАНИЕ: КУРСАНТ</p>
 
         <div class="tabs">
             <button class="tab-btn active" onclick="ui.tab('shop', this)">АНГАР</button>
@@ -51,145 +67,96 @@
         </div>
 
         <div id="tab-shop" class="content active"><div class="shop-grid" id="sGrid"></div></div>
-        <div id="tab-top" class="content"><div id="topList">Загрузка...</div></div>
+        <div id="tab-top" class="content" id="topList">Рейтинг пуст...</div>
         <div id="tab-set" class="content">
             <input type="text" id="nick" placeholder="Твой ник" maxlength="10">
         </div>
 
-        <button class="btn-main" onclick="game.start()">ВЗЛЕТ 🚀</button>
+        <button class="btn-start" onclick="game.start()">ПОЕХАЛИ! 🚀</button>
     </div>
 </div>
 
 <canvas id="game"></canvas>
 
 <script>
-// --- КОНФИГУРАЦИЯ ---
-const SB_URL = 'https://mnfddistqwbtmcyroojg.supabase.co';
+// --- КЛЮЧИ (ЗАМЕНИ НА СВОИ) ---
+const SB_URL = 'https://mnfddistqwbtmcyroojg.supabase.co'; 
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1uZmRkaXN0cXdidG1jeXJvb2pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0MDYzMjYsImV4cCI6MjA4Njk4MjMyNn0.8TMxgNPykwOCIVGfLLKv2aFnVukt4UueHuLDOs3qt3w';
-const sb = (SB_URL.includes('http')) ? supabase.createClient(SB_URL, SB_KEY) : null;
+const sb = (SB_URL) ? supabase.createClient(SB_URL, SB_KEY) : null;
 
+// --- САМОЛЕТЫ ---
 const ships = [
-    { n: "Як-52", p: 0, c: "#ff4b6e", s: "5", f: "1.0" },
-    { n: "МиГ-15", p: 1500, c: "#94a3b8", s: "7", f: "2.0" },
-    { n: "Су-27", p: 15000, c: "#3b82f6", s: "9", f: "4.0" },
-    { n: "Starship", p: 100000, c: "gold", s: "4", f: "10.0" },
-    { n: "ORIGIN", p: 0, c: "rgb", s: "Экстрим", f: "15.0", adm: true }
+    { n: "Як-52", p: 0, c: "#ff4b6e" },
+    { n: "МиГ-15", p: 1000, c: "#94a3b8" },
+    { n: "Су-27", p: 5000, c: "#3b82f6" },
+    { n: "ORIGIN", p: 0, c: "gold", adm: true }
 ];
 
-let db = JSON.parse(localStorage.getItem('avi_806_v5')) || { n: "Pilot", c: 0, u: [true, false, false, false, false], cur: 0, hi: 0 };
+let db = JSON.parse(localStorage.getItem('avi_v100')) || { n: "Pilot", c: 0, u: [true, false, false, false], cur: 0, hi: 0 };
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
-let particles = [], powerups = [], bullets = [], enemies = [];
-let combo = 1, cTimer = 0, fTimer = 0, tTimer = 0, actPw = { shield: false }, boss = null, bCount = 1, rgbH = 0;
+let bullets = [], enemies = [];
 
-// --- ИНТЕРФЕЙС ---
 const ui = {
     tab: (id, el) => {
-        document.querySelectorAll('.content').forEach(c => c.style.display = 'none');
+        // Убираем активные классы
+        document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('tab-'+id).style.display = 'block';
+        // Включаем нужный
+        document.getElementById('tab-' + id).classList.add('active');
         el.classList.add('active');
-        if(id === 'top' && sb) ui.loadTop();
     },
     render: () => {
-        const g = document.getElementById('sGrid'); g.innerHTML = '';
+        const g = document.getElementById('sGrid');
+        g.innerHTML = '';
         ships.forEach((s, i) => {
-            if(s.adm && db.n !== "806L4") return;
+            if(s.adm && db.n !== "806L4") return; // Секретка
             const d = document.createElement('div');
             d.className = `shop-item ${db.cur === i ? 'selected' : ''}`;
-            d.innerHTML = `<b>${s.adm ? '👑 ' : ''}${s.n}</b><br>${db.u[i] || s.adm ? 'OK' : s.p+'💰'}`;
-            d.onclick = (e) => {
-                e.stopPropagation();
+            d.innerHTML = `<b>${s.n}</b><br>${db.u[i] || s.adm ? 'OK' : s.p+'💰'}`;
+            d.onclick = () => {
                 if(db.u[i] || s.adm) db.cur = i;
                 else if(db.c >= s.p) { db.c -= s.p; db.u[i] = true; db.cur = i; }
-                document.getElementById('shipStats').innerText = `Скорость: ${s.s} | Огонь: ${s.f}`;
                 ui.save(); ui.render();
             };
             g.appendChild(d);
         });
         document.getElementById('hCoins').innerText = db.c;
         document.getElementById('nick').value = db.n;
-        document.getElementById('rankLabel').innerText = (db.n === "806L4" ? "АДМИНИСТРАТОР" : "КУРСАНТ");
     },
-    save: () => localStorage.setItem('avi_806_v5', JSON.stringify(db)),
-    loadTop: async () => {
-        if(!sb) return;
-        const { data } = await sb.from('leaderboard').select('*').order('score', { ascending: false }).limit(5);
-        if(data) document.getElementById('topList').innerHTML = data.map((p, i) => `<div class="leader-row"><span>${p.name === '806L4' ? '[ADM] ' : ''}${p.name}</span><b>${p.score}</b></div>`).join('');
-    }
+    save: () => localStorage.setItem('avi_v100', JSON.stringify(db))
 };
 
-// --- ИГРА ---
 const game = {
     active: false,
-    score: 0,
     p: { x: 0, y: 0, tx: 0, ty: 0 },
     start: () => {
-        db.n = document.getElementById('nick').value || db.n; ui.save();
+        db.n = document.getElementById('nick').value || db.n;
+        ui.save();
         document.getElementById('mainMenu').style.display = 'none';
-        game.active = true; game.score = 0; combo = 1; boss = null; bCount = 1;
-        enemies = []; bullets = []; particles = []; powerups = [];
+        game.active = true;
         game.p.x = canvas.width/2; game.p.y = canvas.height-100;
-        game.spawn(); game.loop();
-    },
-    spawn: () => {
-        if(!game.active || boss) return;
-        enemies.push({ x: Math.random()*canvas.width, y: -50, s: 3+Math.random()*3 });
-        setTimeout(game.spawn, 1000 - Math.min(game.score/10, 700));
+        game.loop();
     },
     loop: () => {
         if(!game.active) return;
         ctx.fillStyle = '#0f172a'; ctx.fillRect(0,0,canvas.width, canvas.height);
         
-        rgbH = (rgbH + 2) % 360;
-        const sCol = ships[db.cur].c === 'rgb' ? `hsl(${rgbH}, 100%, 50%)` : ships[db.cur].c;
-
+        // Плавное движение
         game.p.x += (game.p.tx - game.p.x) * 0.15;
         game.p.y += (game.p.ty - game.p.y) * 0.15;
 
-        // Игрок
-        ctx.fillStyle = sCol;
-        ctx.beginPath(); ctx.moveTo(game.p.x, game.p.y-20); ctx.lineTo(game.p.x+15, game.p.y+10); ctx.lineTo(game.p.x-15, game.p.y+10); ctx.fill();
-
-        // Стрельба
-        if(Date.now() % 150 < 20) {
-            const vx = (ships[db.cur].adm) ? [-4, -2, 0, 2, 4] : [0];
-            vx.forEach(v => bullets.push({x: game.p.x, y: game.p.y-20, vx: v}));
-        }
-
-        bullets.forEach((b, i) => {
-            b.y -= 12; b.x += b.vx;
-            ctx.fillStyle = sCol; ctx.fillRect(b.x-2, b.y, 4, 10);
-            if(b.y < 0) bullets.splice(i, 1);
-        });
-
-        enemies.forEach((en, i) => {
-            en.y += en.s;
-            ctx.fillStyle = 'white'; ctx.fillRect(en.x-15, en.y-15, 30, 30);
-            bullets.forEach((b, bi) => {
-                if(Math.hypot(en.x-b.x, en.y-b.y) < 25) {
-                    enemies.splice(i, 1); bullets.splice(bi, 1);
-                    game.score += 10; db.c++;
-                    document.getElementById('hScore').innerText = game.score;
-                    document.getElementById('hCoins').innerText = db.c;
-                }
-            });
-            if(Math.hypot(en.x-game.p.x, en.y-game.p.y) < 30) game.over();
-        });
+        // Рисуем игрока
+        ctx.fillStyle = ships[db.cur].c;
+        ctx.beginPath();
+        ctx.arc(game.p.x, game.p.y, 20, 0, Math.PI*2);
+        ctx.fill();
 
         requestAnimationFrame(game.loop);
-    },
-    over: async () => {
-        game.active = false;
-        if(game.score > db.hi) {
-            db.hi = game.score;
-            if(sb) await sb.from('leaderboard').upsert([{ name: db.n, score: db.hi }], { onConflict: 'name' });
-        }
-        ui.save(); alert("GAME OVER! SCORE: " + game.score); location.reload();
     }
 };
 
-// Управление
+// УПРАВЛЕНИЕ
 const move = (e) => {
     const x = e.touches ? e.touches[0].clientX : e.clientX;
     const y = e.touches ? e.touches[0].clientY : e.clientY;
@@ -197,9 +164,17 @@ const move = (e) => {
 };
 window.addEventListener('mousemove', move);
 window.addEventListener('touchmove', (e) => { move(e); }, {passive:false});
-window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
-window.dispatchEvent(new Event('resize'));
-ui.render();
+
+window.addEventListener('resize', () => { 
+    canvas.width = window.innerWidth; 
+    canvas.height = window.innerHeight; 
+});
+
+// ЗАПУСК
+window.onload = () => {
+    window.dispatchEvent(new Event('resize'));
+    ui.render();
+};
 </script>
 </body>
 </html>
