@@ -27,7 +27,7 @@
             background: #1e293b; padding: 25px; border-radius: 25px; 
             text-align: center; border: 2px solid var(--pink); 
             width: 90%; max-width: 400px; 
-            pointer-events: all; /* Разрешаем клики */
+            pointer-events: all; 
         }
 
         .hud { position: absolute; top: 50px; left: 20px; z-index: 10; pointer-events: none; font-family: monospace; }
@@ -79,7 +79,7 @@
 <canvas id="game"></canvas>
 
 <script>
-// --- КЛЮЧИ (ЗАМЕНИ НА СВОИ) ---
+// --- КЛЮЧИ  ---
 const SB_URL = 'https://mnfddistqwbtmcyroojg.supabase.co'; 
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1uZmRkaXN0cXdidG1jeXJvb2pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0MDYzMjYsImV4cCI6MjA4Njk4MjMyNn0.8TMxgNPykwOCIVGfLLKv2aFnVukt4UueHuLDOs3qt3w';
 const sb = (SB_URL) ? supabase.createClient(SB_URL, SB_KEY) : null;
@@ -99,7 +99,7 @@ let bullets = [], enemies = [];
 
 const ui = {
     tab: (id, el) => {
-        // Убираем активные классы
+        // активные классы
         document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         // Включаем нужный
@@ -178,3 +178,4 @@ window.onload = () => {
 </script>
 </body>
 </html>
+
