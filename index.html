@@ -3,35 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Aviator Elite 806L4 Online</title>
+    <title>Aviator Elite 806L4</title>
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
         :root { --pink: #ff4b6e; --dark: #0f172a; --gold: #ffd700; --blue: #00d2ff; }
-        * { box-sizing: border-box; -webkit-touch-callout: none; user-select: none; }
-        body { margin: 0; background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; touch-action: none; }
-        canvas { display: block; width: 100vw; height: 100vh; }
+        * { box-sizing: border-box; -webkit-touch-callout: none; user-select: none; margin: 0; padding: 0; }
+        body { background: var(--dark); color: white; font-family: sans-serif; overflow: hidden; touch-action: none; width: 100vw; height: 100vh; }
+        canvas { display: block; position: absolute; inset: 0; z-index: 1; }
 
         /* Интерфейс */
-        .hud { position: absolute; top: 50px; left: 20px; z-index: 10; background: rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 15px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); font-family: monospace; font-size: 18px; }
-        .overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 100; backdrop-filter: blur(12px); }
-        .menu-card { background: rgba(30, 41, 59, 0.95); padding: 25px; border-radius: 28px; text-align: center; border: 1px solid rgba(255,255,255,0.1); width: 92%; max-width: 420px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+        .hud { position: absolute; top: 50px; left: 20px; z-index: 10; background: rgba(255,255,255,0.1); padding: 12px; border-radius: 15px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); pointer-events: none; }
+        .overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 100; backdrop-filter: blur(10px); }
+        .menu-card { background: #1e293b; padding: 25px; border-radius: 25px; text-align: center; border: 2px solid var(--pink); width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         
-        .tabs { display: flex; gap: 8px; margin: 15px 0; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 12px; }
-        .tab-btn { flex: 1; padding: 10px; border-radius: 10px; font-size: 12px; color: #94a3b8; cursor: pointer; transition: 0.3s; font-weight: bold; }
-        .tab-btn.active { background: var(--pink); color: white; }
+        .tabs { display: flex; gap: 5px; margin: 15px 0; }
+        .tab-btn { flex: 1; padding: 10px; border-radius: 10px; font-size: 11px; font-weight: bold; cursor: pointer; border: none; background: rgba(255,255,255,0.1); color: white; transition: 0.2s; }
+        .tab-btn.active { background: var(--pink); }
 
-        .content { display: none; max-height: 300px; overflow-y: auto; margin-top: 10px; scrollbar-width: none; }
+        .content { display: none; max-height: 250px; overflow-y: auto; margin: 10px 0; padding-right: 5px; }
         .content.active { display: block; }
 
-        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .ship-card { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 15px; border: 2px solid transparent; cursor: pointer; }
-        .ship-card.selected { border-color: var(--pink); background: rgba(255,75,110,0.15); }
+        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .shop-item { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; border: 2px solid transparent; cursor: pointer; font-size: 12px; }
+        .shop-item.selected { border-color: var(--pink); background: rgba(255,75,110,0.1); }
 
-        input { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); padding: 14px; width: 100%; border-radius: 12px; text-align: center; color: white; font-size: 16px; margin-bottom: 10px; }
-        button.start-btn { background: var(--pink); color: white; border: none; padding: 16px; border-radius: 50px; font-weight: bold; width: 100%; font-size: 18px; margin-top: 10px; cursor: pointer; }
+        input { background: #0f172a; border: 1px solid #334155; padding: 12px; width: 100%; border-radius: 10px; color: white; text-align: center; margin-bottom: 10px; }
+        .btn-main { background: var(--pink); color: white; border: none; padding: 15px; border-radius: 50px; font-weight: bold; width: 100%; font-size: 16px; cursor: pointer; margin-top: 10px; }
         
-        .leader-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
-        @keyframes pop { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        .leader-row { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #334155; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -40,23 +39,24 @@
 
 <div id="mainMenu" class="overlay">
     <div class="menu-card">
-        <div id="rankLabel" style="color:var(--pink); font-size: 12px; font-weight: bold; margin-bottom: 5px;">ЗВАНИЕ: КУРСАНТ</div>
-        <h2 id="shipName" style="margin: 0 0 10px 0;">AVIATOR ONLINE</h2>
+        <div id="rankLabel" style="color:var(--pink); font-size: 10px; font-weight: bold; margin-bottom: 5px;">ЗВАНИЕ: КУРСАНТ</div>
+        <h2 id="shipTitle">АНГАР</h2>
         
+        <div id="shipStats" style="font-size: 11px; color: #94a3b8; margin: 10px 0;">Выберите самолет</div>
+
         <div class="tabs">
-            <div class="tab-btn active" onclick="ui.tab('shop', this)">АНГАР</div>
-            <div class="tab-btn" onclick="ui.tab('top', this)">ТОП</div>
-            <div class="tab-btn" onclick="ui.tab('set', this)">ПРОФИЛЬ</div>
+            <button class="tab-btn active" onclick="ui.tab('shop', this)">АНГАР</button>
+            <button class="tab-btn" onclick="ui.tab('top', this)">ТОП</button>
+            <button class="tab-btn" onclick="ui.tab('set', this)">НИК</button>
         </div>
 
         <div id="tab-shop" class="content active"><div class="shop-grid" id="sGrid"></div></div>
         <div id="tab-top" class="content"><div id="topList">Загрузка...</div></div>
         <div id="tab-set" class="content">
-            <input type="text" id="nick" placeholder="Позывной" maxlength="12">
-            <p style="font-size: 12px; color: #94a3b8;">Мышь / Тач / WASD</p>
+            <input type="text" id="nick" placeholder="Твой ник" maxlength="10">
         </div>
 
-        <button class="start-btn" onclick="game.start()">ВЗЛЕТ 🚀</button>
+        <button class="btn-main" onclick="game.start()">ВЗЛЕТ 🚀</button>
     </div>
 </div>
 
@@ -66,96 +66,64 @@
 // --- КОНФИГУРАЦИЯ ---
 const SB_URL = 'https://mnfddistqwbtmcyroojg.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1uZmRkaXN0cXdidG1jeXJvb2pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0MDYzMjYsImV4cCI6MjA4Njk4MjMyNn0.8TMxgNPykwOCIVGfLLKv2aFnVukt4UueHuLDOs3qt3w';
-const sb = (SB_URL !== 'ТВОЙ_URL') ? supabase.createClient(SB_URL, SB_KEY) : null;
+const sb = (SB_URL.includes('http')) ? supabase.createClient(SB_URL, SB_KEY) : null;
 
 const ships = [
-    { n: "Як-52", d: "Учебный винт.", p: 0, c: "#ff4b6e", s: "5/10", f: "1.0" },
-    { n: "МиГ-15", d: "Легенда войны.", p: 1500, c: "#94a3b8", s: "7/10", f: "2.0" },
-    { n: "Су-27", d: "Ас маневров.", p: 15000, c: "#3b82f6", s: "9/10", f: "4.0" },
-    { n: "F-22 Raptor", d: "Стелс-невидимка.", p: 40000, c: "#10b981", s: "10/10", f: "5.5" },
-    { n: "Су-57", d: "Будущее авиации.", p: 100000, c: "#f43f5e", s: "10/10", f: "6.5" },
-    { n: "Starship", d: "Межпланетный класс.", p: 300000, c: "gold", s: "4/10", f: "10.0" },
-    { n: "ORIGIN", d: "Секретный прототип 806L4. RGB Мощность.", p: 0, c: "rgb", s: "Экстрим", f: "15.0", adm: true }
+    { n: "Як-52", p: 0, c: "#ff4b6e", s: "5", f: "1.0" },
+    { n: "МиГ-15", p: 1500, c: "#94a3b8", s: "7", f: "2.0" },
+    { n: "Су-27", p: 15000, c: "#3b82f6", s: "9", f: "4.0" },
+    { n: "Starship", p: 100000, c: "gold", s: "4", f: "10.0" },
+    { n: "ORIGIN", p: 0, c: "rgb", s: "Экстрим", f: "15.0", adm: true }
 ];
 
-const rewards = [{a:100, i:"💰"}, {a:500, i:"💰"}, {t:"shield", i:"🛡️"}, {a:10000, i:"💎"}];
-const ranks = [{m:0, t:"КУРСАНТ"}, {m:100000, t:"МАРШАЛ"}];
-
-// --- СОСТОЯНИЕ ---
-let db = JSON.parse(localStorage.getItem('avi_admin_v4')) || { n: "Pilot", c: 0, u: [true], cur: 0, hi: 0, streak: 0, lastC: 0, tut: true };
+let db = JSON.parse(localStorage.getItem('avi_806_v5')) || { n: "Pilot", c: 0, u: [true, false, false, false, false], cur: 0, hi: 0 };
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 let particles = [], powerups = [], bullets = [], enemies = [];
-let combo = 1, cTime = 0, fTime = 0, tTime = 0, actPw = { shield: false }, boss = null, bCount = 1;
-let rgbHue = 0; // Для перелива админского корабля
+let combo = 1, cTimer = 0, fTimer = 0, tTimer = 0, actPw = { shield: false }, boss = null, bCount = 1, rgbH = 0;
 
-const audio = {
-    ctx: null,
-    play(f, t, d, v) {
-        try {
-            if(!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-            if(this.ctx.state === 'suspended') this.ctx.resume();
-            const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-            o.type = t; o.frequency.setValueAtTime(f, this.ctx.currentTime);
-            g.gain.setValueAtTime(v, this.ctx.currentTime);
-            g.gain.linearRampToValueAtTime(0, this.ctx.currentTime + d);
-            o.connect(g); g.connect(this.ctx.destination);
-            o.start(); o.stop(this.ctx.currentTime + d);
-        } catch(e) {}
-    }
-};
-
+// --- ИНТЕРФЕЙС ---
 const ui = {
     tab: (id, el) => {
-        document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.content').forEach(c => c.style.display = 'none');
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('tab-'+id).classList.add('active');
+        document.getElementById('tab-'+id).style.display = 'block';
         el.classList.add('active');
-        if(id === 'top') ui.loadTop();
+        if(id === 'top' && sb) ui.loadTop();
     },
     render: () => {
         const g = document.getElementById('sGrid'); g.innerHTML = '';
         ships.forEach((s, i) => {
-            if(s.adm && db.n !== "806L4") return; // Прячем админский корабль от других
-            const card = document.createElement('div');
-            card.className = `shop-item ${db.cur === i ? 'selected' : ''}`;
-            card.innerHTML = `<b>${s.adm ? '👑 ' : ''}${s.n}</b><br><small>${db.u[i] || s.adm ? 'OK' : s.p+'💰'}</small>`;
-            card.onclick = () => {
-                audio.play(600, 'sine', 0.05, 0.1);
-                document.getElementById('shipTitle').innerText = s.n;
-                document.getElementById('shipStats').innerHTML = `<i>${s.d}</i><br>Скорость: ${s.s} | Огонь: ${s.f}`;
+            if(s.adm && db.n !== "806L4") return;
+            const d = document.createElement('div');
+            d.className = `shop-item ${db.cur === i ? 'selected' : ''}`;
+            d.innerHTML = `<b>${s.adm ? '👑 ' : ''}${s.n}</b><br>${db.u[i] || s.adm ? 'OK' : s.p+'💰'}`;
+            d.onclick = (e) => {
+                e.stopPropagation();
                 if(db.u[i] || s.adm) db.cur = i;
                 else if(db.c >= s.p) { db.c -= s.p; db.u[i] = true; db.cur = i; }
+                document.getElementById('shipStats').innerText = `Скорость: ${s.s} | Огонь: ${s.f}`;
                 ui.save(); ui.render();
             };
-            g.appendChild(card);
+            g.appendChild(d);
         });
         document.getElementById('hCoins').innerText = db.c;
         document.getElementById('nick').value = db.n;
-        const rName = db.n === "806L4" ? "ГЛАВНЫЙ АДМИНИСТРАТОР" : (ranks.slice().reverse().find(r => db.hi >= r.m)?.t || "КУРСАНТ");
-        document.getElementById('rankLabel').innerText = "ЗВАНИЕ: " + rName;
+        document.getElementById('rankLabel').innerText = (db.n === "806L4" ? "АДМИНИСТРАТОР" : "КУРСАНТ");
     },
-    save: () => localStorage.setItem('avi_admin_v4', JSON.stringify(db)),
+    save: () => localStorage.setItem('avi_806_v5', JSON.stringify(db)),
     loadTop: async () => {
         if(!sb) return;
-        const { data } = await sb.from('leaderboard').select('*').order('score', { ascending: false }).limit(10);
-        if(data) document.getElementById('topList').innerHTML = data.map((p, i) => {
-            const isAdm = p.name === "806L4";
-            return `<div class="leader-row" style="${isAdm ? 'color:var(--gold); font-weight:bold;' : ''}">
-                <span>${i+1}. ${isAdm ? '[ADMIN] ' : ''}${p.name}</span>
-                <b>${p.score}</b>
-            </div>`;
-        }).join('');
+        const { data } = await sb.from('leaderboard').select('*').order('score', { ascending: false }).limit(5);
+        if(data) document.getElementById('topList').innerHTML = data.map((p, i) => `<div class="leader-row"><span>${p.name === '806L4' ? '[ADM] ' : ''}${p.name}</span><b>${p.score}</b></div>`).join('');
     }
 };
 
-function expl(x, y, color) {
-    for (let i = 0; i < 15; i++) particles.push({ x, y, vx: (Math.random()-0.5)*10, vy: (Math.random()-0.5)*10, size: Math.random()*4+2, color, alpha: 1 });
-    audio.play(100, 'sawtooth', 0.3, 0.1);
-}
-
+// --- ИГРА ---
 const game = {
-    active: false, score: 0, p: { x: 0, y: 0, tx: 0, ty: 0 },
+    active: false,
+    score: 0,
+    p: { x: 0, y: 0, tx: 0, ty: 0 },
     start: () => {
         db.n = document.getElementById('nick').value || db.n; ui.save();
         document.getElementById('mainMenu').style.display = 'none';
@@ -166,85 +134,50 @@ const game = {
     },
     spawn: () => {
         if(!game.active || boss) return;
-        enemies.push({ x: Math.random()*canvas.width, y: -50, s: 3+Math.random()*4 });
-        setTimeout(game.spawn, Math.max(200, 1100 - game.score/15));
+        enemies.push({ x: Math.random()*canvas.width, y: -50, s: 3+Math.random()*3 });
+        setTimeout(game.spawn, 1000 - Math.min(game.score/10, 700));
     },
     loop: () => {
         if(!game.active) return;
         ctx.fillStyle = '#0f172a'; ctx.fillRect(0,0,canvas.width, canvas.height);
         
-        rgbHue = (rgbHue + 2) % 360; // Обновление цвета радуги
-        const currentShipColor = ships[db.cur].c === 'rgb' ? `hsl(${rgbHue}, 100%, 50%)` : ships[db.cur].c;
-
-        if(cTime > 0) cTime--; else combo = 1;
-        if(fTime > 0) fTime--;
-        if(tTime > 0) tTime--;
-
-        if(!boss && game.score >= bCount * 1000) boss = { x: canvas.width/2, y: -100, hp: 50*bCount, max: 50*bCount, dir: 1 };
+        rgbH = (rgbH + 2) % 360;
+        const sCol = ships[db.cur].c === 'rgb' ? `hsl(${rgbH}, 100%, 50%)` : ships[db.cur].c;
 
         game.p.x += (game.p.tx - game.p.x) * 0.15;
         game.p.y += (game.p.ty - game.p.y) * 0.15;
 
+        // Игрок
+        ctx.fillStyle = sCol;
+        ctx.beginPath(); ctx.moveTo(game.p.x, game.p.y-20); ctx.lineTo(game.p.x+15, game.p.y+10); ctx.lineTo(game.p.x-15, game.p.y+10); ctx.fill();
+
         // Стрельба
-        const fireRate = ships[db.cur].adm ? 100 : 150;
-        if(Date.now() % fireRate < 20) {
-            const vx = (tTime > 0 || ships[db.cur].adm) ? [-4, -2, 0, 2, 4] :;
+        if(Date.now() % 150 < 20) {
+            const vx = (ships[db.cur].adm) ? [-4, -2, 0, 2, 4] : [0];
             vx.forEach(v => bullets.push({x: game.p.x, y: game.p.y-20, vx: v}));
-            audio.play(500, 'square', 0.05, 0.02);
         }
 
         bullets.forEach((b, i) => {
-            b.y -= 14; b.x += (b.vx || 0);
-            ctx.fillStyle = ships[db.cur].adm ? `hsl(${rgbHue}, 100%, 70%)` : (tTime > 0 ? 'gold' : var(--pink));
-            ctx.fillRect(b.x-2, b.y, 4, 12);
+            b.y -= 12; b.x += b.vx;
+            ctx.fillStyle = sCol; ctx.fillRect(b.x-2, b.y, 4, 10);
             if(b.y < 0) bullets.splice(i, 1);
         });
 
-        // Босс
-        if(boss) {
-            boss.y += (80 - boss.y) * 0.02; boss.x += boss.dir * 2.5;
-            if(boss.x > canvas.width-60 || boss.x < 60) boss.dir *= -1;
-            ctx.fillStyle = var(--pink); ctx.fillRect(boss.x-60, boss.y-30, 120, 60);
-            ctx.fillStyle = '#ff4b6e'; ctx.fillRect(canvas.width/2-100, 20, (boss.hp/boss.max)*200, 10);
-            if(Date.now() % 3000 < 600) { ctx.strokeStyle = 'red'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(boss.x, boss.y); ctx.lineTo(boss.x, 2000); ctx.stroke(); }
-            if(Date.now() % 3000 > 600 && Date.now() % 3000 < 900) {
-                ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fillRect(boss.x-15, boss.y, 30, 2000);
-                if(Math.abs(game.p.x - boss.x) < 35 && !actPw.shield) game.over();
-            }
-            bullets.forEach((b, bi) => {
-                if(Math.abs(b.x-boss.x)<60 && Math.abs(b.y-boss.y)<30) {
-                    boss.hp--; bullets.splice(bi, 1); expl(b.x, b.y, 'gold');
-                    if(boss.hp <= 0) { game.score += 500; db.c += 50; boss = null; bCount++; game.spawn(); }
-                }
-            });
-        }
-
         enemies.forEach((en, i) => {
-            en.y += (fTime > 0) ? en.s * 0.25 : en.s;
-            ctx.fillStyle = (fTime > 0) ? var(--blue) : 'white'; ctx.fillRect(en.x-15, en.y-15, 30, 30);
+            en.y += en.s;
+            ctx.fillStyle = 'white'; ctx.fillRect(en.x-15, en.y-15, 30, 30);
             bullets.forEach((b, bi) => {
                 if(Math.hypot(en.x-b.x, en.y-b.y) < 25) {
-                    expl(en.x, en.y, currentShipColor);
                     enemies.splice(i, 1); bullets.splice(bi, 1);
-                    game.score += 10*combo; db.c++; combo++; cTime=60;
-                    if(Math.random() < 0.15) powerups.push({x: en.x, y: en.y, t: ['shield','freeze','triple'][Math.floor(Math.random()*3)]});
+                    game.score += 10; db.c++;
+                    document.getElementById('hScore').innerText = game.score;
+                    document.getElementById('hCoins').innerText = db.c;
                 }
             });
-            if(Math.hypot(en.x-game.p.x, en.y-game.p.y) < 35) {
-                if(actPw.shield) { actPw.shield=false; expl(en.x, en.y, var(--blue)); enemies.splice(i, 1); }
-                else if(!ships[db.cur].adm) game.over(); // Админ бессмертен при столкновении
-            }
-            if(en.y > canvas.height) enemies.splice(i, 1);
+            if(Math.hypot(en.x-game.p.x, en.y-game.p.y) < 30) game.over();
         });
 
-        // Игрок
-        ctx.fillStyle = currentShipColor;
-        ctx.shadowBlur = ships[db.cur].adm ? 20 : 0; ctx.shadowColor = currentShipColor;
-        ctx.beginPath(); ctx.moveTo(game.p.x, game.p.y-25); ctx.lineTo(game.p.x+20, game.p.y+15); ctx.lineTo(game.p.x-20, game.p.y+15); ctx.fill();
-        ctx.shadowBlur = 0;
-
-        particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; p.alpha -= 0.02; ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, p.size, p.size); if(p.alpha <= 0) particles.splice(i, 1); });
-        ctx.globalAlpha = 1; requestAnimationFrame(game.loop);
+        requestAnimationFrame(game.loop);
     },
     over: async () => {
         game.active = false;
@@ -256,10 +189,17 @@ const game = {
     }
 };
 
+// Управление
+const move = (e) => {
+    const x = e.touches ? e.touches[0].clientX : e.clientX;
+    const y = e.touches ? e.touches[0].clientY : e.clientY;
+    game.p.tx = x; game.p.ty = y;
+};
+window.addEventListener('mousemove', move);
+window.addEventListener('touchmove', (e) => { move(e); }, {passive:false});
 window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
 window.dispatchEvent(new Event('resize'));
 ui.render();
 </script>
 </body>
 </html>
-
