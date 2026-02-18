@@ -2,30 +2,36 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Aviator Elite 806L4 Online</title>
-    <!-- Подключаем клиент Supabase -->
     <script src="https://cdn.jsdelivr.net"></script>
     <style>
-        :root { --pink: #ff4b6e; --dark: #0f172a; --gold: #ffd700; }
-        body { margin: 0; background: var(--dark); color: white; font-family: sans-serif; overflow: hidden; touch-action: none; }
-        canvas { display: block; }
-        
-        /* Интерфейс */
-        .hud { position: absolute; top: 15px; left: 15px; z-index: 10; font-family: monospace; font-size: 18px; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 10px; }
-        .overlay { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.9); display: flex; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(10px); }
-        .menu { background: #1e293b; padding: 30px; border-radius: 25px; width: 90%; max-width: 400px; text-align: center; border: 2px solid var(--pink); }
-        
-        /* Таблица лидеров */
-        #topList { text-align: left; margin: 15px 0; max-height: 150px; overflow-y: auto; font-size: 14px; border-top: 1px solid #334155; padding-top: 10px; }
-        .row { display: flex; justify-content: space-between; margin-bottom: 5px; color: #94a3b8; }
-        .row.me { color: var(--gold); font-weight: bold; }
+        :root { --pink: #ff4b6e; --dark: #0f172a; --gold: #ffd700; --blue: #00d2ff; }
+        * { box-sizing: border-box; -webkit-touch-callout: none; user-select: none; }
+        body { margin: 0; background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; touch-action: none; }
+        canvas { display: block; width: 100vw; height: 100vh; }
 
-        input { background: #0f172a; border: 1px solid #334155; color: white; padding: 12px; width: 100%; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; text-align: center; }
-        button { background: var(--pink); color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; }
-        .ship-select { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 15px; }
-        .ship-btn { background: #334155; padding: 8px; border-radius: 5px; font-size: 10px; cursor: pointer; border: 1px solid transparent; }
-        .ship-btn.active { border-color: var(--pink); background: #475569; }
+        /* Интерфейс */
+        .hud { position: absolute; top: 50px; left: 20px; z-index: 10; background: rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 15px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); font-family: monospace; font-size: 18px; }
+        .overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 100; backdrop-filter: blur(12px); }
+        .menu-card { background: rgba(30, 41, 59, 0.95); padding: 25px; border-radius: 28px; text-align: center; border: 1px solid rgba(255,255,255,0.1); width: 92%; max-width: 420px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+        
+        .tabs { display: flex; gap: 8px; margin: 15px 0; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 12px; }
+        .tab-btn { flex: 1; padding: 10px; border-radius: 10px; font-size: 12px; color: #94a3b8; cursor: pointer; transition: 0.3s; font-weight: bold; }
+        .tab-btn.active { background: var(--pink); color: white; }
+
+        .content { display: none; max-height: 300px; overflow-y: auto; margin-top: 10px; scrollbar-width: none; }
+        .content.active { display: block; }
+
+        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .ship-card { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 15px; border: 2px solid transparent; cursor: pointer; }
+        .ship-card.selected { border-color: var(--pink); background: rgba(255,75,110,0.15); }
+
+        input { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); padding: 14px; width: 100%; border-radius: 12px; text-align: center; color: white; font-size: 16px; margin-bottom: 10px; }
+        button.start-btn { background: var(--pink); color: white; border: none; padding: 16px; border-radius: 50px; font-weight: bold; width: 100%; font-size: 18px; margin-top: 10px; cursor: pointer; }
+        
+        .leader-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
+        @keyframes pop { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -33,245 +39,226 @@
 <div class="hud">💰 <span id="hCoins">0</span> | ⭐ <span id="hScore">0</span></div>
 
 <div id="mainMenu" class="overlay">
-    <div class="menu">
-        <h2 style="margin-top:0">AVIATOR ONLINE</h2>
-        <input type="text" id="pName" placeholder="Твой позывной" maxlength="10">
+    <div class="menu-card">
+        <div id="rankLabel" style="color:var(--pink); font-size: 12px; font-weight: bold; margin-bottom: 5px;">ЗВАНИЕ: КУРСАНТ</div>
+        <h2 id="shipName" style="margin: 0 0 10px 0;">AVIATOR ONLINE</h2>
         
-        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 5px;">ВЫБЕРИ САМОЛЕТ:</div>
-        <div class="ship-select" id="sGrid"></div>
+        <div class="tabs">
+            <div class="tab-btn active" onclick="ui.tab('shop', this)">АНГАР</div>
+            <div class="tab-btn" onclick="ui.tab('top', this)">ТОП</div>
+            <div class="tab-btn" onclick="ui.tab('set', this)">ПРОФИЛЬ</div>
+        </div>
 
-        <div style="font-size: 12px; color: var(--pink); margin-bottom: 5px;">ОНЛАЙН РЕКОРДЫ:</div>
-        <div id="topList">Загрузка топа...</div>
+        <div id="tab-shop" class="content active"><div class="shop-grid" id="sGrid"></div></div>
+        <div id="tab-top" class="content"><div id="topList">Загрузка...</div></div>
+        <div id="tab-set" class="content">
+            <input type="text" id="nick" placeholder="Позывной" maxlength="12">
+            <p style="font-size: 12px; color: #94a3b8;">Мышь / Тач / WASD</p>
+        </div>
 
-        <button onclick="game.start()">ВЗЛЕТ 🚀</button>
+        <button class="start-btn" onclick="game.start()">ВЗЛЕТ 🚀</button>
     </div>
 </div>
 
 <canvas id="game"></canvas>
 
 <script>
-// --- 1. КОНФИГУРАЦИЯ SUPABASE ---
-const SB_URL = 'https://mnfddistqwbtmcyroojg.supabase.co'; 
+// --- КОНФИГУРАЦИЯ ---
+const SB_URL = 'https://mnfddistqwbtmcyroojg.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1uZmRkaXN0cXdidG1jeXJvb2pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0MDYzMjYsImV4cCI6MjA4Njk4MjMyNn0.8TMxgNPykwOCIVGfLLKv2aFnVukt4UueHuLDOs3qt3w';
 const sb = supabase.createClient(SB_URL, SB_KEY);
 
-// --- 2. ДАННЫЕ ИГРЫ ---
 const ships = [
-    { n: "Як-52", d: "Учебный винт.", p: 0, c: "#ff4b6e" },
-    { n: "L-39", d: "Реактивный тренажер.", p: 500, c: "#00d2ff" },
-    { n: "МиГ-15", d: "Легенда войны.", p: 1500, c: "#94a3b8" },
-    { n: "F-86 Sabre", d: "Классика США.", p: 3000, c: "#ffd700" },
-    { n: "МиГ-21", d: "Сверхзвук.", p: 7000, c: "#9c27b0" },
-    { n: "F-4 Phantom", d: "Тяжелый зверь.", p: 12000, c: "#795548" },
-    { n: "МиГ-25", d: "Перехватчик.", p: 20000, c: "#607d8b" },
-    { n: "F-14 Tomcat", d: "Палубный ас.", p: 30000, c: "#3f51b5" },
-    { n: "Су-27", d: "Маневренность.", p: 45000, c: "#03a9f4" },
-    { n: "F-15 Eagle", d: "Непобедимый.", p: 60000, c: "#8bc34a" },
-    { n: "МиГ-31", d: "Король скорости.", p: 75000, c: "#ff9800" },
-    { n: "F-22 Raptor", d: "Стелс.", p: 95000, c: "#212121" },
-    { n: "Су-57", d: "5-е поколение.", p: 120000, c: "#455a64" },
-    { n: "SR-71", d: "Стратосфера.", p: 160000, c: "#1a1a1a" },
-    { n: "Starship", d: "Космос.", p: 250000, c: "gold" }
+    { n: "Як-52", p: 0, c: "#ff4b6e" }, { n: "L-39", p: 500, c: "#00d2ff" }, 
+    { n: "МиГ-15", p: 1500, c: "#94a3b8" }, { n: "F-86", p: 3000, c: "#ffd700" },
+    { n: "МиГ-21", p: 7000, c: "#9c27b0" }, { n: "Су-27", p: 15000, c: "#3b82f6" },
+    { n: "F-22", p: 30000, c: "#10b981" }, { n: "Starship", p: 70000, c: "gold" }
+];
+
+const rewards = [
+    { d: 1, a: 100, i: "💰" }, { d: 2, a: 250, i: "💰" }, { d: 3, t: "shield", i: "🛡️" },
+    { d: 4, a: 500, i: "💰" }, { d: 5, t: "triple", i: "🔥" }, { d: 6, a: 1000, i: "💰" }, { d: 7, a: 5000, i: "💎" }
 ];
 
 const ranks = [{m:0, t:"КУРСАНТ"}, {m:5000, t:"ПИЛОТ"}, {m:20000, t:"АС"}, {m:100000, t:"МАРШАЛ"}];
 
-// --- 3. ЗВУКОВОЙ ДВИЖОК ---
+// --- ЗВУК ---
 const audio = {
     ctx: new (window.AudioContext || window.webkitAudioContext)(),
     play(f, t, d, v) {
-        if (this.ctx.state === 'suspended') this.ctx.resume();
-        const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-        o.type = t; o.frequency.setValueAtTime(f, this.ctx.currentTime);
-        o.frequency.exponentialRampToValueAtTime(10, this.ctx.currentTime + d);
-        g.gain.setValueAtTime(v, this.ctx.currentTime);
-        g.gain.linearRampToValueAtTime(0, this.ctx.currentTime + d);
-        o.connect(g); g.connect(this.ctx.destination);
-        o.start(); o.stop(this.ctx.currentTime + d);
-    },
-    shoot() { this.play(400, 'square', 0.1, 0.05); },
-    boom() { this.play(100, 'sawtooth', 0.4, 0.15); },
-    click() { this.play(800, 'sine', 0.05, 0.1); }
+        try {
+            if (this.ctx.state === 'suspended') this.ctx.resume();
+            const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+            o.type = t; o.frequency.setValueAtTime(f, this.ctx.currentTime);
+            o.frequency.exponentialRampToValueAtTime(10, this.ctx.currentTime + d);
+            g.gain.setValueAtTime(v, this.ctx.currentTime);
+            g.gain.linearRampToValueAtTime(0, this.ctx.currentTime + d);
+            o.connect(g); g.connect(this.ctx.destination);
+            o.start(); o.stop(this.ctx.currentTime + d);
+        } catch(e) {}
+    }
 };
 
-// --- 4. СОСТОЯНИЕ И ПЕРЕМЕННЫЕ ---
-let db = JSON.parse(localStorage.getItem('avi_online_pro')) || { n: "Пилот", c: 0, u: [true], cur: 0, hi: 0 };
+// --- СОСТОЯНИЕ ---
+let db = JSON.parse(localStorage.getItem('avi_vfinal')) || { n: "Pilot", c: 0, u: [true], cur: 0, hi: 0, streak: 0, lastC: 0 };
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
+let particles = [], powerups = [], bullets = [], enemies = [], clouds = [];
+let combo = 1, cTimer = 0, fTimer = 0, tTimer = 0, activePw = { shield: false }, boss = null, bCount = 1;
 
-let particles = [], powerups = [], bullets = [], enemies = [];
-let combo = 1, comboTimer = 0, freezeTimer = 0, tripleTimer = 0;
-let activePw = { shield: false, freeze: false, triple: false };
-let boss = null, bossCounter = 1;
-
-// --- 5. ФУНКЦИИ ИНТЕРФЕЙСА ---
+// --- ИНТЕРФЕЙС ---
 const ui = {
     tab: (id, el) => {
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        document.querySelectorAll('.tab-link').forEach(b => b.classList.remove('active'));
-        document.getElementById('tab-'+id).classList.add('active');
-        el.classList.add('active');
-        if(id === 'leader') ui.loadTop();
+        document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-'+id).classList.add('active'); el.classList.add('active');
+        if(id === 'top') ui.loadTop();
     },
     render: () => {
         const g = document.getElementById('sGrid'); g.innerHTML = '';
         ships.forEach((s, i) => {
-            const d = document.createElement('div');
-            d.className = `shop-item ${db.cur === i ? 'selected' : ''}`;
-            d.innerHTML = `<b>${s.n}</b><br><small>${db.u[i] ? 'ВЗЛЕТ' : s.p+'💰'}</small>`;
-            d.onclick = () => {
-                audio.click();
+            const card = document.createElement('div');
+            card.className = `ship-card ${db.cur === i ? 'selected' : ''}`;
+            card.innerHTML = `<b>${s.n}</b><br><small>${db.u[i] ? 'OK' : s.p+'💰'}</small>`;
+            card.onclick = () => {
                 if(db.u[i]) db.cur = i;
                 else if(db.c >= s.p) { db.c -= s.p; db.u[i] = true; db.cur = i; }
-                ui.save(); ui.render();
+                ui.save(); ui.render(); audio.play(800, 'sine', 0.05, 0.1);
             };
-            g.appendChild(d);
+            g.appendChild(card);
         });
         document.getElementById('hCoins').innerText = db.c;
-        document.getElementById('rankBadge').innerText = "ЗВАНИЕ: " + (ranks.slice().reverse().find(r => db.hi >= r.m)?.t || "КУРСАНТ");
+        document.getElementById('nick').value = db.n;
+        document.getElementById('rankLabel').innerText = "ЗВАНИЕ: " + (ranks.slice().reverse().find(r => db.hi >= r.m)?.t || "КУРСАНТ");
     },
-    save: () => localStorage.setItem('avi_online_pro', JSON.stringify(db)),
+    save: () => localStorage.setItem('avi_vfinal', JSON.stringify(db)),
     loadTop: async () => {
-        const { data } = await sb.from('leaderboard').select('*').order('score', { ascending: false }).limit(5);
-        if(data) document.getElementById('lList').innerHTML = data.map((p, i) => `<div class="leader-row"><span>${i+1}. ${p.name}</span><b>${p.score}</b></div>`).join('');
+        const { data } = await sb.from('leaderboard').select('*').order('score', { ascending: false }).limit(10);
+        if(data) document.getElementById('topList').innerHTML = data.map((p, i) => `<div class="leader-item"><span>${i+1}. ${p.name}</span><b>${p.score}</b></div>`).join('');
     }
 };
 
-// --- 6. ИГРОВОЙ ДВИЖОК ---
-function createExplosion(x, y, color) {
+// --- ЕЖЕДНЕВНЫЕ НАГРАДЫ ---
+function checkDaily() {
+    const now = new Date().setHours(0,0,0,0);
+    if (db.lastC < now) {
+        if (now - db.lastC > 86400000) db.streak = 0;
+        const r = rewards[db.streak % 7];
+        if (r.a) db.c += r.a;
+        if (r.t === 'shield') activePw.shield = true;
+        db.lastC = now; db.streak++; ui.save();
+        const div = document.createElement('div');
+        div.style = "position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:1000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(5px);";
+        div.innerHTML = `<div style="background:var(--dark); padding:30px; border-radius:20px; border:2px solid var(--pink); text-align:center; animation:pop 0.3s;"><h2>${r.i} ДЕНЬ ${db.streak % 8 || 1}</h2><p>${r.a ? '+ '+r.a+' монет' : 'Бонус активирован!'}</p><button onclick="this.parentElement.parentElement.remove()" style="background:var(--pink); border:none; color:white; padding:10px 20px; border-radius:10px; cursor:pointer;">ОК</button></div>`;
+        document.body.appendChild(div);
+    }
+}
+
+// --- ИГРА ---
+function expl(x, y, color) {
     for (let i = 0; i < 15; i++) particles.push({ x, y, vx: (Math.random()-0.5)*10, vy: (Math.random()-0.5)*10, size: Math.random()*4+2, color, alpha: 1 });
-    audio.boom();
+    audio.play(100, 'sawtooth', 0.3, 0.1);
 }
 
 const game = {
-    active: false, score: 0,
-    p: { x: 0, y: 0, tx: 0, ty: 0 },
+    active: false, score: 0, p: { x: 0, y: 0, tx: 0, ty: 0 },
     start: () => {
-        audio.click();
-        db.n = document.getElementById('pName').value || db.n;
-        ui.save();
+        db.n = document.getElementById('nick').value || db.n; ui.save();
         document.getElementById('mainMenu').style.display = 'none';
-        game.active = true; game.score = 0; combo = 1; boss = null; bossCounter = 1;
+        game.active = true; game.score = 0; combo = 1; boss = null; bCount = 1;
         enemies = []; bullets = []; particles = []; powerups = [];
-        activePw = { shield: false, freeze: false, triple: false };
         game.p.x = canvas.width/2; game.p.y = canvas.height-100;
-        game.spawn(); game.loop();
+        game.spawn(); game.loop(); audio.play(400, 'sine', 0.1, 0.1);
     },
     spawn: () => {
         if(!game.active || boss) return;
         enemies.push({ x: Math.random()*canvas.width, y: -50, s: 3+Math.random()*3 });
-        setTimeout(game.spawn, Math.max(250, 1000 - game.score/10));
+        setTimeout(game.spawn, Math.max(200, 1000 - game.score/15));
     },
     loop: () => {
         if(!game.active) return;
         ctx.fillStyle = '#0f172a'; ctx.fillRect(0,0,canvas.width, canvas.height);
+        if(cTimer > 0) cTimer--; else combo = 1;
+        if(fTimer > 0) fTimer--;
+        if(tTimer > 0) tTimer--;
 
-        // Таймеры
-        if(comboTimer > 0) comboTimer--; else combo = 1;
-        if(freezeTimer > 0) freezeTimer--; else activePw.freeze = false;
-        if(tripleTimer > 0) tripleTimer--; else activePw.triple = false;
-
-        // Босс проверка
-        if(!boss && game.score >= bossCounter * 1000) {
-            boss = { x: canvas.width/2, y: -100, hp: 50*bossCounter, maxHp: 50*bossCounter, dir: 1 };
-        }
-
-        // Бонусы
-        powerups.forEach((pw, i) => {
-            pw.y += 2; ctx.fillStyle = pw.c; ctx.beginPath(); ctx.arc(pw.x, pw.y, 15, 0, Math.PI*2); ctx.fill();
-            if(Math.hypot(pw.x-game.p.x, pw.y-game.p.y) < 35) {
-                audio.play(600, 'sine', 0.2, 0.2);
-                if(pw.type === 'shield') activePw.shield = true;
-                if(pw.type === 'freeze') { activePw.freeze = true; freezeTimer = 300; }
-                if(pw.type === 'triple') { activePw.triple = true; tripleTimer = 300; }
-                powerups.splice(i, 1);
-            }
-        });
+        if(!boss && game.score >= bCount * 1000) boss = { x: canvas.width/2, y: -100, hp: 50*bCount, max: 50*bCount, d: 1 };
 
         // Игрок
-        game.p.x += (game.p.tx - game.p.x) * 0.15;
-        game.p.y += (game.p.ty - game.p.y) * 0.15;
-        ctx.fillStyle = ships[db.cur].c;
-        ctx.beginPath(); ctx.moveTo(game.p.x, game.p.y-20); ctx.lineTo(game.p.x+18, game.p.y+12); ctx.lineTo(game.p.x-18, game.p.y+12); ctx.fill();
-        if(activePw.shield) { ctx.strokeStyle = '#00d2ff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(game.p.x, game.p.y, 35, 0, Math.PI*2); ctx.stroke(); }
-        if(combo > 1) { ctx.fillStyle = 'white'; ctx.fillText('x'+combo+' COMBO', game.p.x+25, game.p.y); }
+        game.p.x += (game.p.tx - game.p.x) * 0.15; game.p.y += (game.p.ty - game.p.y) * 0.15;
+        ctx.fillStyle = ships[db.cur].c; ctx.beginPath(); ctx.moveTo(game.p.x, game.p.y-25); ctx.lineTo(game.p.x+20, game.p.y+15); ctx.lineTo(game.p.x-20, game.p.y+15); ctx.fill();
+        if(activePw.shield) { ctx.strokeStyle = var(--blue); ctx.lineWidth=3; ctx.beginPath(); ctx.arc(game.p.x, game.p.y, 35, 0, 7); ctx.stroke(); }
 
         // Стрельба
         if(Date.now() % 140 < 20) {
-            audio.shoot();
-            const vx = activePw.triple ? [-3, 0, 3] : [0];
+            const vx = tTimer > 0 ? [-3, 0, 3] :;
             vx.forEach(v => bullets.push({x: game.p.x, y: game.p.y-20, vx: v}));
+            audio.play(400, 'square', 0.05, 0.03);
         }
         bullets.forEach((b, i) => {
-            b.y -= 12; b.x += (b.vx || 0);
-            ctx.fillStyle = activePw.triple ? 'gold' : '#ff4b6e';
-            ctx.fillRect(b.x-2, b.y, 4, 12);
+            b.y -= 12; b.x += (b.vx || 0); ctx.fillStyle = tTimer > 0 ? 'gold' : var(--pink); ctx.fillRect(b.x-2, b.y, 4, 12);
             if(b.y < 0) bullets.splice(i, 1);
         });
 
-        // Логика Босса
+        // Босс
         if(boss) {
-            boss.y += (80 - boss.y) * 0.02; boss.x += boss.dir * 2;
-            if(boss.x > canvas.width-60 || boss.x < 60) boss.dir *= -1;
-            ctx.fillStyle = '#ff4b6e'; ctx.fillRect(boss.x-50, boss.y-30, 100, 60);
-            ctx.fillStyle = '#334155'; ctx.fillRect(canvas.width/2-100, 20, 200, 10);
-            ctx.fillStyle = '#ff4b6e'; ctx.fillRect(canvas.width/2-100, 20, (boss.hp/boss.maxHp)*200, 10);
-            if(Date.now() % 800 < 20) enemies.push({x: boss.x, y: boss.y+30, s: 5, bM: true});
+            boss.y += (80-boss.y)*0.02; boss.x += boss.d*2; if(boss.x > canvas.width-50 || boss.x < 50) boss.d *= -1;
+            ctx.fillStyle = var(--pink); ctx.fillRect(boss.x-50, boss.y-30, 100, 60);
+            ctx.fillStyle = '#ff4b6e'; ctx.fillRect(canvas.width/2-100, 20, (boss.hp/boss.max)*200, 10);
+            if(Date.now() % 3000 < 500) { ctx.strokeStyle = 'red'; ctx.beginPath(); ctx.moveTo(boss.x, boss.y); ctx.lineTo(boss.x, 2000); ctx.stroke(); }
+            if(Date.now() % 3000 > 500 && Date.now() % 3000 < 800) {
+                ctx.fillStyle = var(--pink); ctx.fillRect(boss.x-10, boss.y, 20, 2000);
+                if(Math.abs(game.p.x-boss.x)<25 && !activePw.shield) game.over();
+            }
             bullets.forEach((b, bi) => {
                 if(Math.abs(b.x-boss.x)<50 && Math.abs(b.y-boss.y)<30) {
-                    boss.hp--; bullets.splice(bi, 1); createExplosion(b.x, b.y, 'gold');
-                    if(boss.hp <= 0) { game.score += 500; db.c += 50; boss = null; bossCounter++; audio.boom(); game.spawn(); }
+                    boss.hp--; bullets.splice(bi, 1); expl(b.x, b.y, 'gold');
+                    if(boss.hp <= 0) { game.score += 500; db.c += 50; boss = null; bCount++; game.spawn(); }
                 }
             });
-            if(Math.hypot(boss.x-game.p.x, boss.y-game.p.y) < 60 && !activePw.shield) game.over();
         }
 
         // Враги
         enemies.forEach((en, i) => {
-            en.y += activePw.freeze ? en.s*0.2 : en.s;
-            ctx.fillStyle = en.bM ? '#ff4b6e' : (activePw.freeze ? '#00d2ff' : 'white');
-            ctx.fillRect(en.x-15, en.y-15, 30, 30);
+            en.y += fTimer > 0 ? en.s*0.2 : en.s; ctx.fillStyle = fTimer > 0 ? var(--blue) : 'white'; ctx.fillRect(en.x-15, en.y-15, 30, 30);
             bullets.forEach((b, bi) => {
                 if(Math.hypot(en.x-b.x, en.y-b.y) < 25) {
-                    createExplosion(en.x, en.y, '#ffd700');
-                    if(Math.random()<0.15) {
+                    expl(en.x, en.y, 'gold'); enemies.splice(i, 1); bullets.splice(bi, 1); game.score += 10*combo; db.c++; combo++; cTimer=60;
+                    if(Math.random()<0.1) {
                         const t = ['shield','freeze','triple'][Math.floor(Math.random()*3)];
-                        powerups.push({x: en.x, y: en.y, type: t, c: t==='shield'?'#00d2ff':t==='freeze'?'#fff':'gold'});
+                        powerups.push({x: en.x, y: en.y, t, c: t==='shield'?var(--blue):'white'});
                     }
-                    enemies.splice(i, 1); bullets.splice(bi, 1); game.score += 10*combo; db.c++; combo++; comboTimer = 60;
-                    document.getElementById('hScore').innerText = game.score; document.getElementById('hCoins').innerText = db.c;
                 }
             });
             if(Math.hypot(en.x-game.p.x, en.y-game.p.y) < 35) {
-                if(activePw.shield) { activePw.shield = false; createExplosion(en.x, en.y, '#00d2ff'); enemies.splice(i,1); }
-                else game.over();
+                if(activePw.shield) { activePw.shield=false; expl(en.x, en.y, var(--blue)); enemies.splice(i,1); } else game.over();
             }
             if(en.y > canvas.height) enemies.splice(i, 1);
         });
 
-        // Отрисовка частиц
-        particles.forEach((p, i) => {
-            p.x += p.vx; p.y += p.vy; p.alpha -= 0.02;
-            ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, p.size, p.size);
-            if(p.alpha <= 0) particles.splice(i, 1);
+        powerups.forEach((pw, i) => {
+            pw.y += 2; ctx.fillStyle = pw.c; ctx.beginPath(); ctx.arc(pw.x, pw.y, 15, 0, 7); ctx.fill();
+            if(Math.hypot(pw.x-game.p.x, pw.y-game.p.y) < 35) {
+                if(pw.t==='shield') activePw.shield=true; if(pw.t==='freeze') fTimer=300; if(pw.t==='triple') tTimer=300;
+                powerups.splice(i,1); audio.play(600, 'sine', 0.2, 0.1);
+            }
         });
-        ctx.globalAlpha = 1;
-        requestAnimationFrame(game.loop);
+
+        particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; p.alpha -= 0.02; ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, p.size, p.size); if(p.alpha <= 0) particles.splice(i, 1); });
+        ctx.globalAlpha = 1; requestAnimationFrame(game.loop);
     },
     over: async () => {
         game.active = false;
         if(game.score > db.hi) { db.hi = game.score; await sb.from('leaderboard').upsert([{ name: db.n, score: db.hi }], { onConflict: 'name' }); }
-        ui.save(); alert("САМОЛЕТ СБИТ! Счет: " + game.score); location.reload();
+        ui.save(); alert("СЧЕТ: " + game.score); location.reload();
     }
 };
 
-// --- УПРАВЛЕНИЕ ---
-const up = (e) => { game.p.tx = e.touches ? e.touches.clientX : e.clientX; game.p.ty = e.touches ? e.touches.clientY : e.clientY; };
-window.addEventListener('mousemove', up);
-window.addEventListener('touchmove', (e) => { e.preventDefault(); up(e); }, {passive:false});
+const input = (e) => { game.p.tx = e.touches ? e.touches.clientX : e.clientX; game.p.ty = e.touches ? e.touches.clientY : e.clientY; };
+window.addEventListener('mousemove', input); window.addEventListener('touchmove', (e) => { e.preventDefault(); input(e); }, {passive:false});
 window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
 window.dispatchEvent(new Event('resize'));
-ui.render();
+ui.render(); checkDaily();
 </script>
 </body>
 </html>
